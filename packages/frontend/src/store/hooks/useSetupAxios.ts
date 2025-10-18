@@ -1,4 +1,9 @@
-import { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import {
+  AxiosError,
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import StatusCode from "status-code-enum";
@@ -7,8 +12,8 @@ import store from "@/store";
 import { useLogout } from "@/store/hooks/auth";
 import { toast } from "sonner";
 
-interface ExtendedAxiosResponse<T = any>
-  extends Omit<import("axios").AxiosResponse<T>, "data"> {
+interface ExtendedAxiosResponse<T = Record<string, unknown>>
+  extends Omit<AxiosResponse<T>, "data"> {
   data: T & { error?: string };
 }
 
