@@ -1,84 +1,149 @@
-# Turborepo starter
+# SMM Monorepo Setup
 
-This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
+Welcome! This monorepo uses [Turborepo](https://turborepo.com/) to manage both frontend and backend codebases. Please follow the instructions below to set up your environment and run the project.
 
-## Using this example
+---
 
-Run the following command:
+## Required Setup Steps
+
+**Complete each marked step (`[x]`) to ensure the project runs successfully.**
+
+### 1. **Install Dependencies** `[x]`
+
+At the repo root, install all packages using:
 
 ```sh
-npx create-turbo@latest -e with-yarn
+yarn install
 ```
 
-## What's inside?
+- This will install all dependencies for both frontend and backend using workspaces.
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
+### 2. **Backend Setup** `[x]`
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Navigate to the backend package:
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
+```sh
+cd packages/backend
 ```
-cd my-turborepo
+
+#### a. **Copy and Configure Environment Variables** `[x]`
+
+```sh
+cp env.template .env
+```
+
+Edit `.env` and replace placeholder values. **You must set:**
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- Optionally: `PORT`, `MONGODB_URI`, `JWT_SECRET`, `ENCRYPTION_KEY`, `SESSION_SECRET`, `FRONTEND_URL`
+
+#### b. **Start MongoDB** `[x]`
+
+- Ensure [MongoDB](https://www.mongodb.com/) is running locally (`mongod`)  
+  **OR**  
+  Set your MONGODB_URI to a [MongoDB Atlas](https://www.mongodb.com/atlas/database) cluster.
+
+---
+
+### 3. **Frontend Setup** `[x]`
+
+Navigate back to the repo root:
+
+```sh
+cd ../../
+```
+
+The frontend is inside `packages/frontend`. No extra config is required unless specified in its README.
+
+---
+
+### 4. **Generate Secure Keys** (Highly recommended for production) `[x]`
+
+If deploying to production, generate secure secrets:
+
+```sh
+# 32+ char JWT secret
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# 32 char encryption key
+node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
+# Session secret
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Paste these in your backend `.env`.
+
+---
+
+## Running the Project
+
+From the **repo root**:
+
+### 5. **Build the Repo** `[optional unless deploying]`
+
+```sh
 yarn build
 ```
 
-### Develop
+---
 
-To develop all apps and packages, run the following command:
+### 6. **Start Development Servers** `[x]`
 
-```
-cd my-turborepo
+```sh
 yarn dev
 ```
 
-### Remote Caching
+- This will run both frontend and backend servers in dev mode.
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+---
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## About This Monorepo
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+- **packages/frontend**: Next.js frontend app
+- **packages/backend**: Node.js backend with Google OAuth & MongoDB
+- **(other common packages may exist as utilities/config)**
 
-```
-cd my-turborepo
-npx turbo login
-```
+Monorepo managed tools:
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+- **TypeScript** for type checking
+- **ESLint** for linting
+- **Prettier** for formatting
+- **Turbo** for build orchestration
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+---
 
-```
-npx turbo link
-```
+## Authentication Flow (Backend)
 
-## Useful Links
+1. User hits `/auth/google`, gets redirected to Google
+2. On callback, backend exchanges code for tokens and generates JWT
+3. JWT is passed to frontend for protected routes
 
-Learn more about the power of Turborepo:
+---
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+## Useful Commands
+
+- `yarn dev` – start all dev servers
+- `yarn build` – build all apps/packages
+- `yarn lint` – run linters
+- `yarn format` – run Prettier
+
+---
+
+## More Info
+
+- See [packages/backend/SETUP.md](packages/backend/SETUP.md) for detailed backend instructions.
+- Turborepo docs: [Running Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks), [Caching](https://turborepo.com/docs/core-concepts/remote-caching)
+
+---
+
+## Checklist for Setup
+
+- [ ] Install root dependencies
+- [ ] Configure backend `.env`
+- [ ] Start MongoDB (local or Atlas)
+- [ ] Generate and add secrets to `.env` (for prod)
+- [ ] Start dev servers with `yarn dev`
+
+_Complete all steps marked `[x]` before using the project._

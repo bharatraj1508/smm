@@ -1,15 +1,17 @@
 {
-  "name": "with-yarn",
+  "name": "@smm/smm",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "packages/frontend",
+    "packages/backend"
   ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "lint:fix": "turbo run lint:fix",
+    "format": "prettier --write \"**/*.{js,ts,tsx,md}\"",
+    "clean": "turbo run clean && rm -rf .turbo"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
