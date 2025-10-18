@@ -51,8 +51,8 @@ class AuthService {
             console.error("Error in Google OAuth strategy:", error);
             return done(error, null);
           }
-        },
-      ),
+        }
+      )
     );
 
     // Serialize user for session
@@ -77,7 +77,7 @@ class AuthService {
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
       process.env.GOOGLE_REDIRECT_URI ||
-        "http://localhost:3002/api/auth/google/callback",
+        "http://localhost:3002/api/auth/google/callback"
     );
   }
 
@@ -166,7 +166,7 @@ class AuthService {
     } catch (error) {
       console.error("Error getting authenticated Gmail client:", error);
       throw new Error(
-        `Failed to get authenticated Gmail client: ${error.message}`,
+        `Failed to get authenticated Gmail client: ${error.message}`
       );
     }
   }

@@ -20,5 +20,9 @@
   "packageManager": "yarn@1.22.22",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "eslint": "^9.38.0",
+    "status-code-enum": "^1.0.0"
   }
 }

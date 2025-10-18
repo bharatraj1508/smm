@@ -17,14 +17,14 @@ router.get(
     }/login?error=auth_failed`,
     session: false,
   }),
-  authController.callback,
+  authController.callback
 );
 
 // Get current user profile
 router.get("/me", authenticateToken, authController.me);
 
 // Logout route
-router.post("/logout", authenticateToken, authController.logout);
+router.post("/logout", authController.logout);
 
 // Refresh token route
 router.post("/refresh", authenticateToken, authController.refresh);
