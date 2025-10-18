@@ -5,6 +5,7 @@ import { AuthState } from "../types/auth";
 
 import useStoreSelector from "./useStoreSelector";
 import { persistor } from "@/store";
+import axios from "axios";
 
 export function useLogin() {
   const dispatch = useDispatch();
@@ -14,7 +15,7 @@ export function useLogin() {
 export function useLogout() {
   const dispatch = useDispatch();
   return () => {
-    const keysToRemove = [];
+    const keysToRemove: string[] = [];
 
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -23,17 +24,16 @@ export function useLogout() {
       }
     }
 
+    axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/auth/logout`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
     keysToRemove.forEach((key) => localStorage.removeItem(key));
-    // Dynamically remove all cookies
-    // Only set the expires time for the accessToken cookie; don't try to remove all cookies
-    document.cookie =
-      "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
-
-    // Clear Redux + persist store
     dispatch(actions.logout());
     persistor.purge();
-
-    dispatch(actions.logout());
   };
 }
 

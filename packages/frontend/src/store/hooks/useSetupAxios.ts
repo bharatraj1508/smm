@@ -7,6 +7,18 @@ import store from "@/store";
 import { useLogout } from "@/store/hooks/auth";
 import { toast } from "sonner";
 
+interface ExtendedAxiosResponse<T = any>
+  extends Omit<import("axios").AxiosResponse<T>, "data"> {
+  data: T & { error?: string };
+}
+
+const AUTH_FAILED_ERRORS = [
+  "Invalid or expired token",
+  "Token required",
+  "Invalid user",
+  "Authentication failed",
+];
+
 export function useSetupAxios(instance: AxiosInstance) {
   const router = useRouter();
   const logout = useLogout();
@@ -30,8 +42,14 @@ export function useSetupAxios(instance: AxiosInstance) {
 
       instance.interceptors.response.use(
         (value) => value,
-        (error: AxiosError<{ message: string }>) => {
-          const response = error.response;
+        async (error: AxiosError<{ message: string }>) => {
+          const response = error.response as ExtendedAxiosResponse<{
+            message?: string;
+          }>;
+
+          const authError = response?.data?.error || "";
+          const isAuthFailed = AUTH_FAILED_ERRORS.includes(authError);
+
           if (
             response?.status === StatusCode.ClientErrorForbidden &&
             response?.data?.message === "Session expired"
@@ -42,9 +60,18 @@ export function useSetupAxios(instance: AxiosInstance) {
 
           if (
             response?.status === StatusCode.ClientErrorUnauthorized &&
-            response?.data?.message === "jwt expired"
+            isAuthFailed
           ) {
-            toast.error("Session expired. Please log in.");
+            let msg;
+            if (authError === "Invalid or expired token") {
+              msg = "Session Expired. Please login to proceed";
+            }
+
+            authError === "Invalid or expired token"
+              ? (msg = "Session Expired. Please login to proceed")
+              : (msg = "Please login to proceed");
+
+            toast.info(msg);
             logout();
             router.push("/auth/login");
           }

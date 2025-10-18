@@ -10,7 +10,7 @@ export const authenticateToken = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        error: "Access token required",
+        error: "Token required",
         message: "Please provide a valid authentication token",
       });
     }
@@ -40,8 +40,8 @@ export const authenticateToken = async (req, res, next) => {
     if (error.message === "Invalid or expired token") {
       return res.status(401).json({
         success: false,
-        error: "Invalid token",
-        message: "Token is invalid or expired. Please login again.",
+        error: "Invalid or expired token",
+        message: "Invalid or expired token",
       });
     }
 
@@ -154,7 +154,7 @@ export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
       "X-RateLimit-Limit": maxRequests,
       "X-RateLimit-Remaining": maxRequests - clientData.requests,
       "X-RateLimit-Reset": new Date(
-        clientData.windowStart + windowMs,
+        clientData.windowStart + windowMs
       ).toISOString(),
     });
 

@@ -1,30 +1,50 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
+import { NextURL } from "next/dist/server/web/next-url";
 
 export function middleware(req: NextRequest) {
-  // localStorage is not available on the server. Use cookies instead.
-  const accessToken = req.cookies.get("accessToken")?.value;
-  const isAuthenticated = !!accessToken;
+  const token = req.cookies.get("accessToken")?.value || "";
+  const { pathname, origin } = req.nextUrl;
+  const valid = decodeToken(token);
 
-  const protectedRoutePrefixes = ["/dashboard", "/settings"];
-
-  const { pathname } = req.nextUrl;
-
-  // See if route is protected
-  const isProtected = protectedRoutePrefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-  );
-
-  if (!isAuthenticated && isProtected) {
-    const loginUrl = req.nextUrl.clone();
-    loginUrl.pathname = "/auth/login";
-    return NextResponse.redirect(loginUrl);
+  if (!valid) {
+    // If the token is invalid and user already on the sign-in page then we do nothing,
+    // redirect to /auth/login otherwise
+    if (pathname !== "/auth/login") {
+      const loginUrl = new NextURL("/auth/login", origin);
+      return NextResponse.redirect(loginUrl);
+    }
+  } else {
+    // If token is valid and trying to access sign-in, redirect to dashboard
+    if (pathname === "/auth/login") {
+      const dashboardUrl = new NextURL("/dashboard", origin);
+      return NextResponse.redirect(dashboardUrl);
+    }
   }
-
-  return NextResponse.next();
 }
 
 // Make sure matcher covers all protected routes
 export const config = {
-  matcher: ["/dashboard/:path*", "/settings/:path*"],
+  matcher: [
+    "/dashboard/:path*", // Protect dashboard route and sub-routes
+    "/auth/login",
+  ],
 };
+
+// function to decode token validity
+function decodeToken(token: string): boolean {
+  try {
+    const decodedToken = jwt.decode(token) as jwt.JwtPayload;
+
+    if (!decodedToken || !decodedToken.exp) {
+      return false;
+    }
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decodedToken.exp > currentTime;
+  } catch (err) {
+    console.error("Token decoding error:", err);
+    return false;
+  }
+}

@@ -83,7 +83,12 @@ class AuthController {
   async logout(req, res) {
     try {
       await authService.logoutUser(req.userId);
-
+      res.cookie("accessToken", "NT", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0
+      });
       res.status(200).json({
         success: true,
         message: "Logged out successfully",
