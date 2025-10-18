@@ -42,6 +42,13 @@ class AuthController {
       // Redirect to frontend with token
       const frontendUrl = new URL(redirectUrl);
       frontendUrl.searchParams.set("token", token);
+      // Set the JWT token as an HTTP-only cookie
+      res.cookie("accessToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
 
       res.redirect(frontendUrl.toString());
     } catch (error) {
@@ -49,7 +56,7 @@ class AuthController {
       res.redirect(
         `${
           process.env.FRONTEND_URL || "http://localhost:3000"
-        }/login?error=callback_failed`,
+        }/login?error=callback_failed`
       );
     }
   }

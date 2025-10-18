@@ -12,7 +12,7 @@ export default function CallbackReceiver() {
   const login = useLogin();
   useEffect(() => {
     if (!token) {
-      return router.push("/login");
+      return router.push("/auth/login");
     }
     login({ accessToken: token });
     router.push("/dashboard");

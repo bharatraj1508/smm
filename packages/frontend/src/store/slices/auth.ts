@@ -22,9 +22,9 @@ export const { actions, ...slice } = createSlice<
 
 export const reducer = persistReducer(
   {
-    key: "hub-auth",
+    key: "auth-T",
     version: 1,
     storage,
   },
-  slice.reducer,
+  slice.reducer
 );

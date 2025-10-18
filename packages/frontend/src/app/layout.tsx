@@ -5,6 +5,7 @@ import { QueryProvider } from "@/lib/query-client-provider";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "@/store";
+import AppLayout from "@/components/AppLayout";
 
 export default function RootLayout({
   children,
@@ -16,7 +17,9 @@ export default function RootLayout({
       <body>
         <Provider store={store}>
           <PersistGate persistor={persistor} loading={null}>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <AppLayout>{children}</AppLayout>
+            </QueryProvider>
           </PersistGate>
         </Provider>
       </body>
