@@ -19,7 +19,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const handleLogin = async () => {
+  const handleGoogleLogin = async () => {
     window.location.href = "http://localhost:3002/api/auth/google";
   };
   return (
@@ -57,7 +57,11 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
-                <Button variant="outline" type="button" onClick={handleLogin}>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={handleGoogleLogin}
+                >
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">

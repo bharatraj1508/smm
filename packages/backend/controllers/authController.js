@@ -1,5 +1,7 @@
 import passport from "passport";
 import authService from "../services/authService.js";
+import { StatusCode } from "status-code-enum";
+import databaseService from "../services/databaseService.js";
 
 class AuthController {
   async googleLogin(req, res, next) {
@@ -61,25 +63,6 @@ class AuthController {
     }
   }
 
-  async me(req, res) {
-    try {
-      const userProfile = await authService.getUserProfile(req.userId);
-
-      res.status(200).json({
-        success: true,
-        data: userProfile,
-        message: "User profile retrieved successfully",
-      });
-    } catch (error) {
-      console.error("Error getting user profile:", error);
-      res.status(500).json({
-        success: false,
-        error: error.message,
-        message: "Failed to retrieve user profile",
-      });
-    }
-  }
-
   async logout(req, res) {
     try {
       await authService.logoutUser(req.userId);
@@ -87,7 +70,7 @@ class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 0
+        maxAge: 0,
       });
       res.status(200).json({
         success: true,
@@ -131,20 +114,54 @@ class AuthController {
     }
   }
 
-  async health(req, res) {
-    res.status(200).json({
-      success: true,
-      message: "Authentication service is running",
-      timestamp: new Date().toISOString(),
-      endpoints: {
-        login: "GET /auth/google",
-        callback: "GET /auth/google/callback",
-        profile: "GET /auth/me",
-        logout: "POST /auth/logout",
-        refresh: "POST /auth/refresh",
-        verify: "GET /auth/verify",
-      },
-    });
+  async register(req, res) {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res
+          .status(StatusCode.ClientErrorBadRequest)
+          .send({ message: "Email and Password fields are required." });
+      }
+
+      const user = await databaseService.findUserByEmail(email);
+      if (user) {
+        return res
+          .status(StatusCode.ClientErrorConflict)
+          .send({ message: "This email has already been used." });
+      }
+
+      const newUser = await databaseService.createUser({ email, password });
+      const token = authService.generateJWTToken(newUser);
+      res.status(StatusCode.SuccessOK).send({ accessToken: token });
+    } catch (error) {
+      console.log(error);
+      res.status(StatusCode.ServerErrorInternal).send({ message: error });
+    }
+  }
+
+  async login(req, res) {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res
+          .status(StatusCode.ClientErrorBadRequest)
+          .send({ message: "Email and Password fields are required." });
+      }
+
+      const user = await databaseService.findUserByEmail(email);
+      const passMatch = user.comparePassword(password);
+      const isAuthenticated = user && passMatch;
+      if (!isAuthenticated) {
+        return res
+          .status(StatusCode.ClientErrorUnauthorized)
+          .send({ message: "Invalid email or password." });
+      }
+      const token = authService.generateJWTToken(user);
+      res.status(StatusCode.SuccessOK).send({ accessToken: token });
+    } catch (error) {
+      console.log(error);
+      res.status(StatusCode.ServerErrorInternal).send(error);
+    }
   }
 }
 

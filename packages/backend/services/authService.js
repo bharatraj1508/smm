@@ -180,27 +180,6 @@ class AuthService {
       throw new Error(`Failed to logout user: ${error.message}`);
     }
   }
-
-  // Get user profile
-  async getUserProfile(userId) {
-    try {
-      const user = await databaseService.getUserById(userId);
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      return {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        profilePicture: user.profilePicture,
-        createdAt: user.createdAt,
-      };
-    } catch (error) {
-      console.error("Error getting user profile:", error);
-      throw new Error(`Failed to get user profile: ${error.message}`);
-    }
-  }
 }
 
 export default new AuthService();
