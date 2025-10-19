@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import {
   AxiosError,
   AxiosInstance,
@@ -5,12 +7,11 @@ import {
   InternalAxiosRequestConfig,
 } from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { toast } from "sonner";
 import StatusCode from "status-code-enum";
 
 import store from "@/store";
 import { useLogout } from "@/store/hooks/auth";
-import { toast } from "sonner";
 
 interface ExtendedAxiosResponse<T = Record<string, unknown>>
   extends Omit<AxiosResponse<T>, "data"> {
@@ -42,7 +43,7 @@ export function useSetupAxios(instance: AxiosInstance) {
 
           return config;
         },
-        (err: AxiosError) => Promise.reject(err)
+        (err: AxiosError) => Promise.reject(err),
       );
 
       instance.interceptors.response.use(
@@ -82,7 +83,7 @@ export function useSetupAxios(instance: AxiosInstance) {
           }
 
           return Promise.reject(error);
-        }
+        },
       );
 
       return () => {
@@ -90,6 +91,6 @@ export function useSetupAxios(instance: AxiosInstance) {
         instance.interceptors.response.clear();
       };
     }, // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 }

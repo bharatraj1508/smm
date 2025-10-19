@@ -1,11 +1,11 @@
+import axios from "axios";
 import { useDispatch } from "react-redux";
 
-import { actions } from "../slices/auth";
-import { AuthState } from "../types/auth";
+import { persistor } from "@/store";
 
 import useStoreSelector from "./useStoreSelector";
-import { persistor } from "@/store";
-import axios from "axios";
+import { actions } from "../slices/auth";
+import { AuthState } from "../types/auth";
 
 export function useLogin() {
   const dispatch = useDispatch();
@@ -29,7 +29,7 @@ export function useLogout() {
       {},
       {
         withCredentials: true,
-      }
+      },
     );
     keysToRemove.forEach((key) => localStorage.removeItem(key));
     dispatch(actions.logout());
