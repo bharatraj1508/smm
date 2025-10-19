@@ -1,8 +1,10 @@
 "use client";
 
-import { useLogin } from "@/store/hooks/auth";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { useLogin } from "@/store/hooks/auth";
 
 export default function CallbackReceiver() {
   const searchParams = useSearchParams();

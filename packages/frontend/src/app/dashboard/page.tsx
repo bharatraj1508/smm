@@ -1,10 +1,11 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { useGmailLabels } from "@/services/gmail";
 import { useLogout } from "@/store/hooks/auth";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 
 function DashBoard() {
   const router = useRouter();
