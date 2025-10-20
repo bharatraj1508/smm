@@ -132,6 +132,12 @@ class AuthController {
 
       const newUser = await databaseService.createUser({ email, password });
       const token = authService.generateJWTToken(newUser);
+      res.cookie("accessToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
       res.status(StatusCode.SuccessOK).send({ accessToken: token });
     } catch (error) {
       console.log(error);
@@ -157,6 +163,12 @@ class AuthController {
           .send({ message: "Invalid email or password." });
       }
       const token = authService.generateJWTToken(user);
+      res.cookie("accessToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
       res.status(StatusCode.SuccessOK).send({ accessToken: token });
     } catch (error) {
       console.log(error);

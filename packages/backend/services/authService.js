@@ -24,11 +24,14 @@ class AuthService {
         async (accessToken, refreshToken, profile, done) => {
           try {
             // Check if user already exists
-            let user = await databaseService.findUserByGoogleId(profile.id);
+            let user = await databaseService.findUserByEmail(
+              profile.emails[0].value
+            );
 
             if (user) {
-              // Update existing user's tokens
+              // Update existing user's tokens and add google id
               await databaseService.updateUserTokens(user._id, {
+                googleId: profile.id,
                 accessToken,
                 refreshToken,
                 expiryDate: new Date(Date.now() + 3600 * 1000), // 1 hour from now

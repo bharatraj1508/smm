@@ -74,6 +74,7 @@ class DatabaseService {
       user.accessToken = tokens.accessToken;
       user.refreshToken = tokens.refreshToken;
       user.tokenExpiry = tokens.expiryDate;
+      user.googleId = tokens.googleId;
 
       await user.save();
       return user;
