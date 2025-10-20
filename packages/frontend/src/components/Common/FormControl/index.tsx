@@ -1,5 +1,6 @@
-import classNames from "classnames";
 import { HTMLAttributes, ReactNode } from "react";
+
+import classNames from "classnames";
 
 type FormControlProps = HTMLAttributes<HTMLDivElement> & {
   label?: ReactNode;

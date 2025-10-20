@@ -1,3 +1,8 @@
+import { joiResolver } from "@hookform/resolvers/joi";
+import Joi from "joi";
+import Link from "next/link";
+import { SubmitHandler, useForm } from "react-hook-form";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,13 +18,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { RegisterFormFields } from "@/store/types/auth";
-import Joi from "joi";
-import Link from "next/link";
-import FormControl from "./Common/FormControl";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { joiResolver } from "@hookform/resolvers/joi";
 import { useAuthRegister } from "@/services/auth";
+import { RegisterFormFields } from "@/store/types/auth";
+
+import FormControl from "./Common/FormControl";
+
+
 
 const RegisterSchema = Joi.object<RegisterFormFields>({
   firstName: Joi.string().required().label("First name"),

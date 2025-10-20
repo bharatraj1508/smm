@@ -1,3 +1,9 @@
+import { joiResolver } from "@hookform/resolvers/joi";
+import Joi from "joi";
+import Link from "next/link";
+import { SubmitHandler, useForm } from "react-hook-form";
+
+import FormControl from "@/components/Common/FormControl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,13 +20,9 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import FormControl from "@/components/Common/FormControl";
-import Joi from "joi";
-import { LoginFields } from "@/store/types/auth";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { joiResolver } from "@hookform/resolvers/joi";
 import { useAuthLogin } from "@/services/auth";
-import Link from "next/link";
+import { LoginFields } from "@/store/types/auth";
+
 
 const LoginSchema = Joi.object<LoginFields>({
   email: Joi.string()
