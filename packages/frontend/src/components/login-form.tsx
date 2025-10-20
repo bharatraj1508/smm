@@ -1,3 +1,9 @@
+import { joiResolver } from "@hookform/resolvers/joi";
+import Joi from "joi";
+import Link from "next/link";
+import { SubmitHandler, useForm } from "react-hook-form";
+
+import FormControl from "@/components/Common/FormControl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,13 +20,39 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useAuthLogin } from "@/services/auth";
+import { LoginFields } from "@/store/types/auth";
+
+
+const LoginSchema = Joi.object<LoginFields>({
+  email: Joi.string()
+    .required()
+    .email({ tlds: { allow: false } })
+    .label("Email"),
+  password: Joi.string().min(8).required().label("Password"),
+});
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const handleLogin = async () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFields>({
+    resolver: joiResolver(LoginSchema),
+    mode: "onBlur",
+  });
+
+  const { mutateAsync: login, isPending } = useAuthLogin();
+
+  const handleGoogleLogin = async () => {
     window.location.href = "http://localhost:3002/api/auth/google";
+  };
+
+  const onSubmit: SubmitHandler<LoginFields> = async (formData) => {
+    await login(formData);
   };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -32,36 +64,58 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
+              <FormControl error={errors.email?.message}>
+                <Field>
+                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <Input
+                    {...register("email")}
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                  />
+                </Field>
+              </FormControl>
+              <FormControl error={errors.password?.message}>
+                <Field>
+                  <div className="flex items-center">
+                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <a
+                      href="#"
+                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    >
+                      Forgot your password?
+                    </a>
+                  </div>
+                  <Input
+                    {...register("password")}
+                    id="password"
+                    type="password"
+                    required
+                  />
+                </Field>
+              </FormControl>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </Field>
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-                <Input id="password" type="password" required />
-              </Field>
-              <Field>
-                <Button type="submit">Login</Button>
-                <Button variant="outline" type="button" onClick={handleLogin}>
+                <Button
+                  type="submit"
+                  variant="default"
+                  loading={isPending}
+                  disabled={isPending}
+                >
+                  Login
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={handleGoogleLogin}
+                >
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account?{" "}
+                  <Link href="/auth/signup">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

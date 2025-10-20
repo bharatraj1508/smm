@@ -20,16 +20,14 @@ router.get(
   authController.callback
 );
 
-// Get current user profile
-router.get("/me", authenticateToken, authController.me);
-
 // Logout route
 router.post("/logout", authController.logout);
 
 // Refresh token route
 router.post("/refresh", authenticateToken, authController.refresh);
 
-// Health check for auth service
-router.get("/health", authController.health);
+router.post("/register", authController.register);
+
+router.post("/login", authController.login);
 
 export default router;

@@ -24,11 +24,14 @@ class AuthService {
         async (accessToken, refreshToken, profile, done) => {
           try {
             // Check if user already exists
-            let user = await databaseService.findUserByGoogleId(profile.id);
+            let user = await databaseService.findUserByEmail(
+              profile.emails[0].value
+            );
 
             if (user) {
-              // Update existing user's tokens
+              // Update existing user's tokens and add google id
               await databaseService.updateUserTokens(user._id, {
+                googleId: profile.id,
                 accessToken,
                 refreshToken,
                 expiryDate: new Date(Date.now() + 3600 * 1000), // 1 hour from now
@@ -178,27 +181,6 @@ class AuthService {
     } catch (error) {
       console.error("Error logging out user:", error);
       throw new Error(`Failed to logout user: ${error.message}`);
-    }
-  }
-
-  // Get user profile
-  async getUserProfile(userId) {
-    try {
-      const user = await databaseService.getUserById(userId);
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      return {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        profilePicture: user.profilePicture,
-        createdAt: user.createdAt,
-      };
-    } catch (error) {
-      console.error("Error getting user profile:", error);
-      throw new Error(`Failed to get user profile: ${error.message}`);
     }
   }
 }
