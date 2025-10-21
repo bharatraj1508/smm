@@ -1,8 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import session from "express-session";
-import MongoStore from "connect-mongo";
 import passport from "passport";
 import fs from "fs";
 import path from "path";
@@ -29,7 +27,7 @@ if (!fs.existsSync(credentialsPath)) {
   console.warn("credentials.json file not found!");
   console.warn("This is optional when using OAuth authentication.");
   console.warn(
-    "You can get credentials from: https://console.cloud.google.com/apis/credentials",
+    "You can get credentials from: https://console.cloud.google.com/apis/credentials"
   );
 }
 
@@ -38,28 +36,8 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Session configuration
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your-session-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl:
-        process.env.MONGODB_URI || "mongodb://localhost:27017/summarize_mails",
-      touchAfter: 24 * 3600,
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    },
-  }),
-);
-
 // Initialize Passport
 app.use(passport.initialize());
-app.use(passport.session());
 
 // Routes
 app.use("/api", appRoutes);
@@ -129,10 +107,10 @@ async function startServer() {
     server.on("error", (error) => {
       if (error.code === "EADDRINUSE") {
         console.error(
-          `Port ${PORT} is already in use. Please try a different port or kill the process using this port.`,
+          `Port ${PORT} is already in use. Please try a different port or kill the process using this port.`
         );
         console.error(
-          "You can kill the process with: lsof -ti:3002 | xargs kill -9",
+          "You can kill the process with: lsof -ti:3002 | xargs kill -9"
         );
       } else {
         console.error("Server error:", error);
