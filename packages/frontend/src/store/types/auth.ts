@@ -2,6 +2,9 @@ import { CaseReducer, PayloadAction } from "@reduxjs/toolkit";
 
 export type AuthState = {
   accessToken?: string;
+  name?: string;
+  email?: string;
+  userId?: string;
 };
 
 type AuthCaseReducer<T = void> = CaseReducer<AuthState, PayloadAction<T>>;

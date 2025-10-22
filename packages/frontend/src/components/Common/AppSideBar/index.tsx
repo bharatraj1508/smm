@@ -31,6 +31,7 @@ import { useLogout } from "@/store/hooks/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
+import store from "@/store";
 
 type Items = {
   title: string;
@@ -85,6 +86,9 @@ export function AppSidebar() {
     logout();
     router.push("/auth/login");
   };
+  const {
+    auth: { name },
+  } = store.getState();
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
@@ -124,7 +128,7 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 {/* we will comeback to this to show user full name here rather a static text */}
                 <SidebarMenuButton>
-                  <User2 /> Username
+                  <User2 /> {name}
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

@@ -16,8 +16,22 @@ export function useAuthLogin() {
     mutationFn(payload: LoginFields) {
       return axios.post("/login", payload, { baseURL, withCredentials: true });
     },
-    onSuccess(res: AxiosResponse<{ accessToken: string }>) {
-      login({ accessToken: res?.data?.accessToken });
+    onSuccess(
+      res: AxiosResponse<{
+        accessToken: string;
+        user: {
+          email: string;
+          name: string;
+          userId: string;
+        };
+      }>
+    ) {
+      login({
+        accessToken: res?.data?.accessToken,
+        email: res?.data?.user.email,
+        name: res?.data?.user.name,
+        userId: res?.data?.user.userId,
+      });
       router.push("/dashboard");
     },
     onError: showAPIErrorMessage,
@@ -35,8 +49,22 @@ export function useAuthRegister() {
         withCredentials: true,
       });
     },
-    onSuccess(res: AxiosResponse<{ accessToken: string }>) {
-      login({ accessToken: res?.data?.accessToken });
+    onSuccess(
+      res: AxiosResponse<{
+        accessToken: string;
+        user: {
+          email: string;
+          name: string;
+          userId: string;
+        };
+      }>
+    ) {
+      login({
+        accessToken: res?.data?.accessToken,
+        email: res?.data?.user.email,
+        name: res?.data?.user.name,
+        userId: res?.data?.user.userId,
+      });
       router.push("/dashboard");
     },
     onError: showAPIErrorMessage,
