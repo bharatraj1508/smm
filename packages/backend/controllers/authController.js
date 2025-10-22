@@ -6,11 +6,6 @@ import databaseService from "../services/databaseService.js";
 class AuthController {
   async googleLogin(req, res, next) {
     try {
-      // Store the redirect URL in session if provided
-      if (req.query.redirect) {
-        req.session.redirectUrl = req.query.redirect;
-      }
-
       passport.authenticate("google", {
         scope: [
           "profile",
@@ -38,12 +33,16 @@ class AuthController {
       // Get redirect URL from session
       const redirectUrl = `${process.env.FRONTEND_URL}/auth/google/callback`;
 
-      // Clear redirect URL from session
-      delete req.session.redirectUrl;
-
       // Redirect to frontend with token
       const frontendUrl = new URL(redirectUrl);
+      const userParamObject = {
+        name: user.name,
+        email: user.email,
+        userId: user._id,
+      };
+      const userString = JSON.stringify(userParamObject);
       frontendUrl.searchParams.set("token", token);
+      frontendUrl.searchParams.set("user", userString);
       // Set the JWT token as an HTTP-only cookie
       res.cookie("accessToken", token, {
         httpOnly: true,
@@ -116,7 +115,7 @@ class AuthController {
 
   async register(req, res) {
     try {
-      const { email, password } = req.body;
+      const { name, email, password } = req.body;
       if (!email || !password) {
         return res
           .status(StatusCode.ClientErrorBadRequest)
@@ -130,7 +129,11 @@ class AuthController {
           .send({ message: "This email has already been used." });
       }
 
-      const newUser = await databaseService.createUser({ email, password });
+      const newUser = await databaseService.createUser({
+        name,
+        email,
+        password,
+      });
       const token = authService.generateJWTToken(newUser);
       res.cookie("accessToken", token, {
         httpOnly: true,
@@ -138,7 +141,14 @@ class AuthController {
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      res.status(StatusCode.SuccessOK).send({ accessToken: token });
+      const userData = {
+        name: newUser.name,
+        email: newUser.email,
+        userId: newUser._id,
+      };
+      res
+        .status(StatusCode.SuccessOK)
+        .send({ accessToken: token, user: userData });
     } catch (error) {
       console.log(error);
       res.status(StatusCode.ServerErrorInternal).send({ message: error });
@@ -155,9 +165,15 @@ class AuthController {
       }
 
       const user = await databaseService.findUserByEmail(email);
-      const passMatch = user.comparePassword(password);
+      const passMatch = user ? user.comparePassword(password) : false;
       const isAuthenticated = user && passMatch;
+      let msg;
       if (!isAuthenticated) {
+        if (user) {
+          user.googleId
+            ? msg === "Try login via goolge auth."
+            : msg === "Invalid email or password.";
+        }
         return res
           .status(StatusCode.ClientErrorUnauthorized)
           .send({ message: "Invalid email or password." });
@@ -169,7 +185,14 @@ class AuthController {
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      res.status(StatusCode.SuccessOK).send({ accessToken: token });
+      const userData = {
+        name: user.name,
+        email: user.email,
+        userId: user._id,
+      };
+      res
+        .status(StatusCode.SuccessOK)
+        .send({ accessToken: token, user: userData });
     } catch (error) {
       console.log(error);
       res.status(StatusCode.ServerErrorInternal).send(error);
