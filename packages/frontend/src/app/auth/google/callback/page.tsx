@@ -24,6 +24,7 @@ export default function CallbackReceiver() {
       name: parsedUser.name,
       email: parsedUser.email,
       userId: parsedUser.userId,
+      googleId: parsedUser.googleId,
     });
     router.push("/dashboard");
   }, [token, router, login]);

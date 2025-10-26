@@ -23,6 +23,7 @@ export function useAuthLogin() {
           email: string;
           name: string;
           userId: string;
+          googleId: string;
         };
       }>
     ) {
@@ -31,6 +32,7 @@ export function useAuthLogin() {
         email: res?.data?.user.email,
         name: res?.data?.user.name,
         userId: res?.data?.user.userId,
+        googleId: res?.data?.user.googleId,
       });
       router.push("/dashboard");
     },
@@ -56,6 +58,7 @@ export function useAuthRegister() {
           email: string;
           name: string;
           userId: string;
+          googleId: string;
         };
       }>
     ) {
@@ -64,6 +67,7 @@ export function useAuthRegister() {
         email: res?.data?.user.email,
         name: res?.data?.user.name,
         userId: res?.data?.user.userId,
+        googleId: res?.data?.user.googleId,
       });
       router.push("/dashboard");
     },
