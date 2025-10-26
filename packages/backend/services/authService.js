@@ -27,10 +27,9 @@ class AuthService {
             let user = await databaseService.findUserByEmail(
               profile.emails[0].value
             );
-
             if (user) {
               // Update existing user's tokens and add google id
-              await databaseService.updateUserTokens(user._id, {
+              user = await databaseService.updateUserTokens(user._id, {
                 googleId: profile.id,
                 accessToken,
                 refreshToken,

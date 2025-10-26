@@ -1,6 +1,10 @@
 import express from "express";
 import gmailController from "../controllers/gmailController.js";
-import { authenticateToken, rateLimit } from "../middleware/authMiddleware.js";
+import {
+  authenticateToken,
+  rateLimit,
+  requireGoogleId,
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -18,7 +22,26 @@ router.get("/labels", authenticateToken, gmailController.getLabels);
 router.get("/labels/:labelId", authenticateToken, gmailController.getLabelById);
 
 // Get emails with optional query
-router.get("/emails", authenticateToken, gmailController.getEmails);
+router.get(
+  "/emails",
+  authenticateToken,
+  requireGoogleId,
+  gmailController.getEmails
+);
+
+router.get(
+  "/sync-count",
+  authenticateToken,
+  requireGoogleId,
+  gmailController.getEmailSyncCount
+);
+
+router.post(
+  "/initiate-sync",
+  authenticateToken,
+  requireGoogleId,
+  gmailController.syncMails
+);
 
 // Get a specific email by ID
 router.get("/emails/:emailId", authenticateToken, gmailController.getEmailById);

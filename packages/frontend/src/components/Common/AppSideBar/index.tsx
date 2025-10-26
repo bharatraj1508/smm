@@ -1,3 +1,7 @@
+import { ForwardRefExoticComponent, RefAttributes } from "react";
+
+import { useQueryClient } from "@tanstack/react-query";
+import classNames from "classnames";
 import {
   Calendar,
   ChevronUp,
@@ -8,7 +12,14 @@ import {
   Settings,
   User2,
 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -20,18 +31,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { usePathname, useRouter } from "next/navigation";
-import { useLogout } from "@/store/hooks/auth";
-import { useQueryClient } from "@tanstack/react-query";
-import classNames from "classnames";
-import { ForwardRefExoticComponent, RefAttributes } from "react";
 import store from "@/store";
+import { useLogout } from "@/store/hooks/auth";
+
+
 
 type Items = {
   title: string;

@@ -5,6 +5,7 @@ export type AuthState = {
   name?: string;
   email?: string;
   userId?: string;
+  googleId?: string;
 };
 
 type AuthCaseReducer<T = void> = CaseReducer<AuthState, PayloadAction<T>>;

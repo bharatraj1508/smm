@@ -39,6 +39,7 @@ class AuthController {
         name: user.name,
         email: user.email,
         userId: user._id,
+        googleId: user.googleId,
       };
       const userString = JSON.stringify(userParamObject);
       frontendUrl.searchParams.set("token", token);
@@ -165,15 +166,26 @@ class AuthController {
       }
 
       const user = await databaseService.findUserByEmail(email);
-      const passMatch = user ? user.comparePassword(password) : false;
-      const isAuthenticated = user && passMatch;
-      let msg;
-      if (!isAuthenticated) {
-        if (user) {
-          user.googleId
-            ? msg === "Try login via goolge auth."
-            : msg === "Invalid email or password.";
+
+      if (!user) {
+        return res
+          .status(StatusCode.ClientErrorUnauthorized)
+          .send({ message: "Invalid email or password." });
+      }
+
+      // If user registered via Google, only allow login if password exists
+      if (user.googleId) {
+        if (!user.password) {
+          return res
+            .status(StatusCode.ClientErrorUnauthorized)
+            .send({ message: "Try login via google auth." });
         }
+        // If there is a password (user set one after Google auth), allow login to continue below
+      }
+
+      // For non-Google users or users who set a password, check password
+      const passwordCorrect = user.comparePassword(password);
+      if (!passwordCorrect) {
         return res
           .status(StatusCode.ClientErrorUnauthorized)
           .send({ message: "Invalid email or password." });
@@ -189,6 +201,7 @@ class AuthController {
         name: user.name,
         email: user.email,
         userId: user._id,
+        googleId: user.googleId,
       };
       res
         .status(StatusCode.SuccessOK)
