@@ -1,7 +1,8 @@
-import useShowAPIErrorMessage from "@/hooks/api/ShowAPIErrorMessage";
-import { EmailQueryParams, SyncCountResponse } from "@/store/types/gmail";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+
+import useShowAPIErrorMessage from "@/hooks/api/ShowAPIErrorMessage";
+import { EmailQueryParams, SyncCountResponse } from "@/store/types/gmail";
 
 const baseURL = `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/gmail`;
 
@@ -56,7 +57,7 @@ export function useSyncMails() {
         withCredentials: true,
       });
     },
-    onSuccess(_, _variables, _context) {
+    onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["gmail", "SyncCount"] });
       queryClient.invalidateQueries({ queryKey: ["gmail", "labels"] });
       queryClient.invalidateQueries({ queryKey: ["gmail", "messages"] });

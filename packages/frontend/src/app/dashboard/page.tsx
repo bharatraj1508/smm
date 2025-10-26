@@ -1,12 +1,14 @@
 "use client";
 
+import { format } from "date-fns";
+import { CheckCircle, PlusIcon } from "lucide-react";
+import Image from "next/image";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEmailSyncCount, useSyncMails } from "@/services/gmail";
 import store from "@/store";
-import { CheckCircle, CheckCircle2, PlusIcon } from "lucide-react";
-import { format } from "date-fns";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 
 function DashBoard() {
   const { data, isFetching } = useEmailSyncCount();
@@ -121,7 +123,7 @@ function DashBoard() {
     <div className="flex justify-center items-center w-[80vw] h-[80vh]">
       <div className="w-3xl border border-gray-200 rounded-lg shadow-lg p-8 bg-neutral-50">
         <div className="flex items-start w-full gap-3">
-          <img
+          <Image
             src="/avatar.png"
             alt="support"
             className="w-13 h-13 rounded-full"
@@ -154,9 +156,10 @@ function DashBoard() {
               </div>
               <div>
                 <p>
-                  It looks like you haven't signed up with Google. To unlock the
-                  full potential of <strong>Summarize My Email (SMM)</strong>,
-                  we recommend to connect your gmail account with SMM.
+                  It looks like you haven&apos;t signed up with Google. To
+                  unlock the full potential of{" "}
+                  <strong>Summarize My Email (SMM)</strong>, we recommend to
+                  connect your gmail account with SMM.
                   <br />
                   <br />
                   <strong>Why is this necessary?</strong> SMM summarizes your
