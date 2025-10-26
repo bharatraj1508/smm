@@ -1,3 +1,4 @@
+import { StatusCode } from "status-code-enum";
 import gmailService from "../services/gmailService.js";
 
 class GmailController {
@@ -83,7 +84,7 @@ class GmailController {
       const emails = await gmailService.getEmails(
         user,
         query,
-        parseInt(maxResults),
+        parseInt(maxResults)
       );
 
       res.status(200).json({
@@ -128,6 +129,52 @@ class GmailController {
     } catch (error) {
       console.error("Error in getEmailById controller:", error);
       res.status(500).json({
+        success: false,
+        error: error.message,
+        message: "Failed to retrieve email",
+      });
+    }
+  }
+
+  async getEmailSyncCount(req, res) {
+    try {
+      const user = req.user;
+      const { count, latestSyncedAt } = await gmailService.getEmailSyncCount(
+        user._id
+      );
+      res.status(StatusCode.SuccessOK).send({ count, latestSyncedAt });
+    } catch (error) {
+      console.error("Error in getEmailById controller:", error);
+      res.status(StatusCode.ServerErrorInternal).json({
+        success: false,
+        error: error.message,
+        message: "Failed to retrieve email",
+      });
+    }
+  }
+
+  async syncMails(req, res) {
+    try {
+      const user = req.user;
+      const { query = "", maxResults = 10 } = req.body;
+
+      const emails = await gmailService.getEmails(
+        user,
+        query,
+        parseInt(maxResults)
+      );
+
+      res.status(200).json({
+        success: true,
+        count: emails.length,
+        message:
+          emails.length > 0
+            ? "Emails retrieved successfully"
+            : "No emails found",
+      });
+    } catch (error) {
+      console.error("Error in getEmailById controller:", error);
+      res.status(StatusCode.ServerErrorInternal).json({
         success: false,
         error: error.message,
         message: "Failed to retrieve email",

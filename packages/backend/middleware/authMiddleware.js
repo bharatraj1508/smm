@@ -53,6 +53,20 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
+// Middleware to check for Google ID presence (required for Google API actions)
+export const requireGoogleId = (req, res, next) => {
+  const user = req.user;
+  if (!user || !user.googleId) {
+    return res.status(400).json({
+      success: false,
+      error: "Google ID required",
+      message:
+        "Your account must be connected with Google to use this feature.",
+    });
+  }
+  next();
+};
+
 // Optional authentication middleware (doesn't fail if no token)
 export const optionalAuth = async (req, res, next) => {
   try {

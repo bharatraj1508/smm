@@ -1,13 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useGmailLabels } from "@/services/gmail";
+import { useEmailSyncCount, useSyncMails } from "@/services/gmail";
 import store from "@/store";
-import { PlusIcon } from "lucide-react";
+import { CheckCircle, CheckCircle2, PlusIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 function DashBoard() {
-  // const { data: labels } = useGmailLabels();
-  // console.log("labelss", labels);
+  const { data, isFetching } = useEmailSyncCount();
 
   const {
     auth: { name, googleId },
@@ -17,14 +19,110 @@ function DashBoard() {
     window.location.href = "http://localhost:3002/api/auth/google";
   };
 
+  const formatDate = (date: Date) => {
+    return date ? format(new Date(date), "MMM d, yyyy, h:mm a") : "";
+  };
+
+  const { mutateAsync: syncMail, isPending } = useSyncMails();
+
+  const handleSync = async () => {
+    await syncMail({ maxResults: 20 }).then((res) => {
+      if (res.status === 200) {
+        toast.info(res.data.message);
+      }
+    });
+  };
+
   return googleId ? (
-    <div>Soon...</div>
+    <div className="flex flex-col gap-4 w-[80vw] h-[80vh]">
+      <h2 className="text-2xl font-bold">Overview</h2>
+      <div className="w-xs border border-gray-200 rounded-lg shadow-md">
+        {isFetching ? (
+          <div className="flex flex-col text-sm gap-8 p-6">
+            <div className="flex flex-col gap-1 text-sm">
+              <Skeleton className="h-6 w-30" />
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-6 w-50" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-6 w-30" />
+              <Skeleton className="h-6 w-50" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-6 w-60" />
+              <Skeleton className="h-10 w-20" />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="flex flex-col p-6 text-sm gap-8">
+              <div className="flex flex-col text-sm">
+                <span className="font-bold text-neutral-600">
+                  Email Sync Status
+                </span>
+                <span className="text-3xl font-bold">{data?.count}</span>
+                <span className="font-medium text-neutral-400">
+                  with SMM Database
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-neutral-600 font-bold">Last Sync</span>
+                <span className="font-medium text-neutral-400">
+                  {data?.latestSyncedAt ? (
+                    formatDate(data?.latestSyncedAt)
+                  ) : (
+                    <div>Not Synced Yet</div>
+                  )}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-8 h-8 text-green-500" />
+                  <p className="text-green-500 text-sm font-bold">
+                    Automatic Sync Active
+                  </p>
+                </div>
+                <Button
+                  className="w-fit"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSync}
+                  loading={isPending}
+                >
+                  Sync Now
+                </Button>
+              </div>
+            </div>
+            <div className="border-t border-gray-200 w-full rounded-xs">
+              <div className="px-6 py-2 text-xs">
+                <ul className="list-disc space-y-2 text-neutral-600 font-thin">
+                  <li>
+                    <strong className="text-gray-600 font-bold">
+                      Automatic Sync Status
+                    </strong>
+                    : All fetched emails are automatically stored in the SMM
+                    database for your convenience.
+                  </li>
+                  <li>
+                    <strong className="text-gray-600 font-bold">
+                      Sync Now
+                    </strong>
+                    : This will synchronize the first 20 emails from your
+                    mailbox with the SMM database.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   ) : (
     <div className="flex justify-center items-center w-[80vw] h-[80vh]">
-      <div className="w-3xl border border-gray-200 rounded-lg shadow-lg p-8">
+      <div className="w-3xl border border-gray-200 rounded-lg shadow-lg p-8 bg-neutral-50">
         <div className="flex items-start w-full gap-3">
           <img
-            src="https://github.com/shadcn.png"
+            src="/avatar.png"
             alt="support"
             className="w-13 h-13 rounded-full"
           />
