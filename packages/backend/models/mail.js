@@ -5,6 +5,7 @@ const mailSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
     mailId: {
       type: String,

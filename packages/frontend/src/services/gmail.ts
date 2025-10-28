@@ -2,7 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 import useShowAPIErrorMessage from "@/hooks/api/ShowAPIErrorMessage";
-import { EmailQueryParams, SyncCountResponse } from "@/store/types/gmail";
+import {
+  EmailQueryParams,
+  GetEmailsResponse,
+  SyncCountResponse,
+} from "@/store/types/gmail";
 
 const baseURL = `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/gmail`;
 
@@ -20,13 +24,16 @@ export function useGmailLabels() {
   });
 }
 
-export function useGmailMessages({ query, maxResults = 10 }: EmailQueryParams) {
+export function useGmailMessages({
+  page = 1,
+  maxResults = 10,
+}: EmailQueryParams) {
   return useQuery({
-    queryKey: ["gmail", "messsages"],
+    queryKey: ["gmail", "messsages", page],
     async queryFn() {
-      const params = `query=${query}&maxResults=${maxResults}`;
+      const params = `page=${page}&maxResults=${maxResults}`;
       const apiUrl = "/emails?" + params;
-      const { data } = await axios.get(apiUrl, {
+      const { data } = await axios.get<GetEmailsResponse>(apiUrl, {
         baseURL,
       });
       return data;

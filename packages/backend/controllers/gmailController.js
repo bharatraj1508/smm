@@ -79,22 +79,21 @@ class GmailController {
   async getEmails(req, res) {
     try {
       const user = req.user;
-      const { query = "", maxResults = 10 } = req.query;
+      const { maxResults = 10, page = 1 } = req.query;
 
-      const emails = await gmailService.getEmails(
+      const { mails, count } = await gmailService.getEmails(
         user,
-        query,
-        parseInt(maxResults)
+        parseInt(maxResults),
+        parseInt(page)
       );
 
       res.status(200).json({
         success: true,
-        data: emails,
-        count: emails.length,
+        data: mails,
+        count,
+        page: parseInt(page),
         message:
-          emails.length > 0
-            ? "Emails retrieved successfully"
-            : "No emails found",
+          count > 0 ? "Emails retrieved successfully" : "No emails found",
       });
     } catch (error) {
       console.error("Error in getEmails controller:", error);
@@ -156,11 +155,10 @@ class GmailController {
   async syncMails(req, res) {
     try {
       const user = req.user;
-      const { query = "", maxResults = 10 } = req.body;
+      const { maxResults = 10 } = req.body;
 
-      const emails = await gmailService.getEmails(
+      const emails = await gmailService.fetchNewEmails(
         user,
-        query,
         parseInt(maxResults)
       );
 
