@@ -3,6 +3,7 @@ import axios from "axios";
 
 import useShowAPIErrorMessage from "@/hooks/api/ShowAPIErrorMessage";
 import {
+  MailByIdResponse,
   EmailQueryParams,
   GetEmailsResponse,
   SyncCountResponse,
@@ -70,5 +71,18 @@ export function useSyncMails() {
       queryClient.invalidateQueries({ queryKey: ["gmail", "messages"] });
     },
     onError: showAPIErrorMessage,
+  });
+}
+
+export function useGetMailbyId(id: string) {
+  return useQuery({
+    queryKey: ["gmail", "mail", id],
+    async queryFn() {
+      const apiUrl = `/emails/${id}`;
+      const { data } = await axios.get<MailByIdResponse>(apiUrl, {
+        baseURL,
+      });
+      return data;
+    },
   });
 }

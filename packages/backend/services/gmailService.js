@@ -194,17 +194,10 @@ class GmailService {
   }
 
   // New method to get email by ID
-  async getEmailById(user, emailId) {
+  async getEmailById(id) {
     try {
-      const gmail = await this.authenticate(user);
-
-      const result = await gmail.users.messages.get({
-        userId: "me",
-        id: emailId,
-        format: "full",
-      });
-
-      return result.data;
+      const mail = await Mail.findById(id).populate("user", "name email _id");
+      return mail;
     } catch (error) {
       console.error("Error getting email by ID:", error);
       throw new Error(`Failed to get email: ${error.message}`);

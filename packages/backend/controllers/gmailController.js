@@ -107,18 +107,17 @@ class GmailController {
 
   async getEmailById(req, res) {
     try {
-      const { emailId } = req.params;
-      const user = req.user;
+      const { id } = req.params;
 
-      if (!emailId) {
+      if (!id) {
         return res.status(400).json({
           success: false,
-          error: "Email ID is required",
-          message: "Please provide a valid email ID",
+          error: "ID is required",
+          message: "Please provide a valid ID",
         });
       }
 
-      const email = await gmailService.getEmailById(user, emailId);
+      const email = await gmailService.getEmailById(id);
 
       res.status(200).json({
         success: true,

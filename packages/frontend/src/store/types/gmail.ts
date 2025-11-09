@@ -14,7 +14,7 @@ export interface EmailData {
   body: string;
   createdAt: Date;
   date: Date;
-  front: string;
+  from: string;
   isRead: boolean;
   labels: string[];
   lastSyncedAt: Date;
@@ -37,4 +37,10 @@ export interface GetEmailsResponse {
   message: string;
   page: number;
   success: boolean;
+}
+
+export interface MailByIdResponse {
+  success: boolean;
+  data: EmailData;
+  message: string;
 }

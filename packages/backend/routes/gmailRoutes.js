@@ -44,6 +44,11 @@ router.post(
 );
 
 // Get a specific email by ID
-router.get("/emails/:emailId", authenticateToken, gmailController.getEmailById);
+router.get(
+  "/emails/:id",
+  authenticateToken,
+  requireGoogleId,
+  gmailController.getEmailById
+);
 
 export default router;
