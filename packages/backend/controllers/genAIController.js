@@ -17,7 +17,12 @@ class GenAIController {
           .status(StatusCode.ClientErrorNotFound)
           .json({ message: "Unable to find the mail." });
       }
-      const category = await geniAIService.generateCategorizeContent(mail);
+      let category;
+      if (!mail.category) {
+        category = await geniAIService.generateCategorizeContent(mail);
+      } else if (mail.category) {
+        category = mail.category;
+      }
       return res.status(StatusCode.SuccessOK).send(category);
     } catch (error) {
       res.status(StatusCode.ServerErrorInternal).json({

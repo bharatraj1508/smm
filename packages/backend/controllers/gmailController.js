@@ -1,5 +1,6 @@
 import { StatusCode } from "status-code-enum";
 import gmailService from "../services/gmailService.js";
+import genAIService from "../services/genAIService.js";
 
 class GmailController {
   async getLabels(req, res) {
@@ -118,10 +119,18 @@ class GmailController {
       }
 
       const email = await gmailService.getEmailById(id);
+      if (!email) {
+        return res.status(StatusCode.ClientErrorNotFound).json({
+          success: false,
+          message: "Mail not found",
+        });
+      }
+      await genAIService.generateCategorizeContent(email);
 
+      const mailWithCategory = await gmailService.getEmailById(id);
       res.status(200).json({
         success: true,
-        data: email,
+        data: mailWithCategory,
         message: "Email retrieved successfully",
       });
     } catch (error) {

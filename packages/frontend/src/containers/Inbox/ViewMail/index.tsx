@@ -1,7 +1,10 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useGetMailbyId } from "@/services/gmail";
 import DOMPurify from "dompurify";
+import { LucideSparkles } from "lucide-react";
 import Image from "next/image";
 
 type ViewMailProps = {
@@ -51,21 +54,36 @@ export default function ViewMail({ id }: ViewMailProps) {
             className="w-13 h-13 rounded-full"
           />
           <div className="flex items-start justify-center flex-col gap-4">
-            <div className="flex flex-col items-start justify-center text-sm mt-1.5">
-              <div>
-                <span className="font-bold">
-                  {mail?.data.from?.match(/^(.*?)</)?.[1]?.trim() ||
-                    mail?.data.from}
-                </span>
-                <span className="font-medium text-neutral-400">
-                  &lt;{mail?.data.from?.match(/<(.*?)>/)?.[1] || ""}&gt;
-                </span>
+            <div className="w-full flex justify-between items-center">
+              <div className="flex flex-col items-start justify-center text-sm mt-1.5">
+                <div>
+                  <span className="font-bold">
+                    {mail?.data.from?.match(/^(.*?)</)?.[1]?.trim() ||
+                      mail?.data.from}
+                  </span>
+                  <span className="font-medium text-neutral-400">
+                    &lt;{mail?.data.from?.match(/<(.*?)>/)?.[1] || ""}&gt;
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs font-medium text-neutral-400">
+                    to {mail?.data.to.join(", ")}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-xs font-medium text-neutral-400">
-                  to {mail?.data.to.join(", ")}
+              <Button className="border border-gray-200 rounded-lg px-3 py-1.5 bg-gradient-to-r from-purple-800 to-purple-400 text-white font-bold text-sm hover:opacity-90">
+                <span className="flex items-center justify-center gap-1">
+                  <LucideSparkles className="w-5 h-5" />
+                  Summarize
                 </span>
-              </div>
+              </Button>
+            </div>
+
+            <div className="flex flex-col justify-center gap-2">
+              <Badge variant="secondary" className="bg-amber-400">
+                {mail?.data.category.type.split("_").join(" ")}
+              </Badge>
+              <p className="text-xs font-thin">{mail?.data.category.reason}</p>
             </div>
 
             {mail?.data.subject && (

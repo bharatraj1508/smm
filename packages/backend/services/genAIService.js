@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { generateCategoryPrompt } from "../utils/prompt.js";
+import Mail from "../models/mail.js";
 
 class GenAIService {
   constructor() {
@@ -66,9 +67,11 @@ class GenAIService {
         resultText += chunk.text ?? "";
       }
       const resultJson = JSON.parse(resultText);
+      await Mail.findByIdAndUpdate(mail._id, {
+        $set: { category: resultJson },
+      });
       return resultJson;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }

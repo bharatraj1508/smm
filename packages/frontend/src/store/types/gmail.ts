@@ -29,6 +29,10 @@ export interface EmailData {
     email: string;
     _id: string;
   };
+  category: {
+    type: string;
+    reason: string;
+  };
 }
 
 export interface GetEmailsResponse {
