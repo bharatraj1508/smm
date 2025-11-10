@@ -33,8 +33,7 @@ import {
 } from "@/components/ui/sidebar";
 import store from "@/store";
 import { useLogout } from "@/store/hooks/auth";
-
-
+import Link from "next/link";
 
 type Items = {
   title: string;
@@ -54,7 +53,7 @@ const items: Items[] = [
   },
   {
     title: "Inbox",
-    url: "#",
+    url: "/inbox",
     icon: Inbox,
     pathname: "inbox",
   },
@@ -112,10 +111,10 @@ export function AppSidebar() {
                     )}
                   >
                     <SidebarMenuButton asChild>
-                      <a href={item.url}>
+                      <Link href={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

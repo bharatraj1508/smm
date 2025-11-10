@@ -122,6 +122,7 @@ class AuthService {
         accessToken: credentials.access_token,
         refreshToken: credentials.refresh_token || refreshToken,
         expiryDate: new Date(credentials.expiry_date),
+        googleId: user.googleId,
       });
 
       return credentials.access_token;

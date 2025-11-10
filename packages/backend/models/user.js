@@ -43,6 +43,7 @@ const userSchema = new mongoose.Schema(
     tokenExpiry: { type: Date, required: false },
     profilePicture: { type: String, default: null },
     isActive: { type: Boolean, default: true },
+    lastHistoryId: { type: String, default: null },
   },
   { timestamps: true }
 );

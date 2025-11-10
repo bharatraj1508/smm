@@ -1,5 +1,6 @@
 import authService from "./authService.js";
 import Mail from "../models/mail.js";
+import User from "../models/user.js";
 
 class GmailService {
   constructor() {
@@ -58,40 +59,61 @@ class GmailService {
     }
   }
 
-  async getEmails(user, query = "", maxResults = 10) {
+  async fetchNewEmails(user, maxResults = 10) {
     try {
       const gmail = await this.authenticate(user);
 
-      // 1. Get list of message IDs
-      const result = await gmail.users.messages.list({
-        userId: "me",
-        q: query,
-        maxResults,
-      });
+      const lastHistoryId = user.lastHistoryId;
 
-      const messages = result.data.messages || [];
+      let messageIds = [];
 
-      // 2. For each message, fetch full email details
-      const emailPromises = messages.map(async (message) => {
+      if (lastHistoryId) {
+        // Incremental sync — only get new emails since last sync
+        const historyRes = await gmail.users.history.list({
+          userId: "me",
+          startHistoryId: lastHistoryId,
+          historyTypes: ["messageAdded"], // only new messages
+        });
+
+        const history = historyRes.data.history || [];
+
+        history.forEach((h) => {
+          if (h.messagesAdded) {
+            h.messagesAdded.forEach((m) => {
+              messageIds.push(m.message.id);
+            });
+          }
+        });
+      }
+
+      // If no history yet (first-time sync), do a full fetch
+      if (!lastHistoryId || messageIds.length === 0) {
+        const listRes = await gmail.users.messages.list({
+          userId: "me",
+          labelIds: ["INBOX"],
+          maxResults,
+        });
+        messageIds = listRes.data.messages?.map((m) => m.id) || [];
+      }
+
+      // Fetch full message details
+      const emailPromises = messageIds.map(async (id) => {
         const email = await gmail.users.messages.get({
           userId: "me",
-          id: message.id,
+          id,
           format: "full",
         });
 
         const payload = email.data.payload;
         const headers = payload.headers;
 
-        // Extract useful metadata
         const subject = headers.find((h) => h.name === "Subject")?.value || "";
         const from = headers.find((h) => h.name === "From")?.value || "";
         const toHeader = headers.find((h) => h.name === "To")?.value || "";
         const to = toHeader ? toHeader.split(",").map((a) => a.trim()) : [];
-
         const dateHeader = headers.find((h) => h.name === "Date")?.value;
         const date = dateHeader ? new Date(dateHeader) : null;
 
-        // Decode base64 body recursively
         const decodeBase64 = (str) =>
           Buffer.from(
             str.replace(/-/g, "+").replace(/_/g, "/"),
@@ -99,18 +121,15 @@ class GmailService {
           ).toString("utf-8");
 
         const getBody = (payload) => {
-          if (payload.body?.data) {
-            return decodeBase64(payload.body.data);
-          } else if (payload.parts?.length) {
-            return payload.parts.map((part) => getBody(part)).join("\n");
-          }
+          if (payload.body?.data) return decodeBase64(payload.body.data);
+          if (payload.parts?.length)
+            return payload.parts.map(getBody).join("\n");
           return "";
         };
 
         const body = getBody(payload);
         const labels = email.data.labelIds || [];
 
-        // 3. Upsert (insert or update if exists)
         const mailDoc = {
           user: user._id,
           mailId: email.data.id,
@@ -125,17 +144,28 @@ class GmailService {
           lastSyncedAt: new Date(),
         };
 
-        // Upsert: If mailId exists, update; otherwise create new
+        // Upsert into DB
         await Mail.findOneAndUpdate(
           { mailId: mailDoc.mailId },
           { $set: mailDoc },
-          { upsert: true, new: true }
+          { upsert: true }
         );
 
         return mailDoc;
       });
 
       const emails = await Promise.all(emailPromises);
+      emails.sort((a, b) => b.date - a.date);
+
+      const profileRes = await gmail.users.getProfile({ userId: "me" });
+      const currentHistoryId = profileRes.data.historyId;
+
+      if (currentHistoryId) {
+        await User.findByIdAndUpdate(user._id, {
+          lastHistoryId: currentHistoryId,
+        });
+      }
+
       return emails;
     } catch (error) {
       console.error("Error getting emails:", error);
@@ -143,18 +173,31 @@ class GmailService {
     }
   }
 
-  // New method to get email by ID
-  async getEmailById(user, emailId) {
+  async getEmails(user, maxResults, page) {
     try {
-      const gmail = await this.authenticate(user);
+      const pageNumber = page;
+      const pageSize = maxResults;
 
-      const result = await gmail.users.messages.get({
-        userId: "me",
-        id: emailId,
-        format: "full",
-      });
+      const count = await Mail.countDocuments({ user });
 
-      return result.data;
+      const mails = await Mail.find({ user })
+        .sort({ date: -1 })
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize)
+        .populate("user", "name email _id");
+
+      return { mails, count };
+    } catch (error) {
+      console.error("Error getting emails:", error);
+      throw new Error(`Failed to get emails: ${error.message}`);
+    }
+  }
+
+  // New method to get email by ID
+  async getEmailById(id) {
+    try {
+      const mail = await Mail.findById(id).populate("user", "name email _id");
+      return mail;
     } catch (error) {
       console.error("Error getting email by ID:", error);
       throw new Error(`Failed to get email: ${error.message}`);
@@ -181,6 +224,22 @@ class GmailService {
         : null;
 
       return { count, latestSyncedAt };
+    } catch (error) {
+      console.error(
+        "Error getting email sync count and latest lastSyncedAt:",
+        error
+      );
+      throw new Error(`Failed to get email sync info: ${error.message}`);
+    }
+  }
+
+  async getLastSyncAt(userId) {
+    try {
+      const latestSyncedAt = await Mail.findOne({ user: userId })
+        .sort({ lastSyncedAt: -1 })
+        .select("lastSyncedAt")
+        .lean();
+      return latestSyncedAt;
     } catch (error) {
       console.error(
         "Error getting email sync count and latest lastSyncedAt:",

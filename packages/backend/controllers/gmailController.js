@@ -1,5 +1,6 @@
 import { StatusCode } from "status-code-enum";
 import gmailService from "../services/gmailService.js";
+import genAIService from "../services/genAIService.js";
 
 class GmailController {
   async getLabels(req, res) {
@@ -79,22 +80,21 @@ class GmailController {
   async getEmails(req, res) {
     try {
       const user = req.user;
-      const { query = "", maxResults = 10 } = req.query;
+      const { maxResults = 10, page = 1 } = req.query;
 
-      const emails = await gmailService.getEmails(
+      const { mails, count } = await gmailService.getEmails(
         user,
-        query,
-        parseInt(maxResults)
+        parseInt(maxResults),
+        parseInt(page)
       );
 
       res.status(200).json({
         success: true,
-        data: emails,
-        count: emails.length,
+        data: mails,
+        count,
+        page: parseInt(page),
         message:
-          emails.length > 0
-            ? "Emails retrieved successfully"
-            : "No emails found",
+          count > 0 ? "Emails retrieved successfully" : "No emails found",
       });
     } catch (error) {
       console.error("Error in getEmails controller:", error);
@@ -108,22 +108,29 @@ class GmailController {
 
   async getEmailById(req, res) {
     try {
-      const { emailId } = req.params;
-      const user = req.user;
+      const { id } = req.params;
 
-      if (!emailId) {
+      if (!id) {
         return res.status(400).json({
           success: false,
-          error: "Email ID is required",
-          message: "Please provide a valid email ID",
+          error: "ID is required",
+          message: "Please provide a valid ID",
         });
       }
 
-      const email = await gmailService.getEmailById(user, emailId);
+      const email = await gmailService.getEmailById(id);
+      if (!email) {
+        return res.status(StatusCode.ClientErrorNotFound).json({
+          success: false,
+          message: "Mail not found",
+        });
+      }
+      await genAIService.generateCategorizeContent(email);
 
+      const mailWithCategory = await gmailService.getEmailById(id);
       res.status(200).json({
         success: true,
-        data: email,
+        data: mailWithCategory,
         message: "Email retrieved successfully",
       });
     } catch (error) {
@@ -156,11 +163,10 @@ class GmailController {
   async syncMails(req, res) {
     try {
       const user = req.user;
-      const { query = "", maxResults = 10 } = req.body;
+      const { maxResults = 10 } = req.body;
 
-      const emails = await gmailService.getEmails(
+      const emails = await gmailService.fetchNewEmails(
         user,
-        query,
         parseInt(maxResults)
       );
 
