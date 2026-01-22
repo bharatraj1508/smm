@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useGetMailbyId } from "@/services/gmail";
+import { useSummarizeEmail } from "@/services/ai";
 import DOMPurify from "dompurify";
-import { LucideSparkles } from "lucide-react";
+import { LucideSparkles, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 type ViewMailProps = {
@@ -36,11 +38,34 @@ function extractPlainText(rawHTML: string): string {
 
 export default function ViewMail({ id }: ViewMailProps) {
   const { data: mail, isPending } = useGetMailbyId(id);
+  const [summary, setSummary] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const { mutateAsync: summarizeEmail, isPending: isRequestPending } =
+    useSummarizeEmail();
+
+  const handleSummarize = async () => {
+    try {
+      setIsStreaming(true);
+      setSummary("");
+      const reader = await summarizeEmail(id);
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setSummary((prev) => prev + chunk);
+      }
+    } catch (error) {
+      console.error("Failed to stream summary", error);
+    } finally {
+      setIsStreaming(false);
+    }
+  };
 
   if (isPending) return <div>Loading...</div>;
 
   const safeHTML = cleanEmailHTML(mail?.data.body || "");
-  const body = extractPlainText(mail?.data.body || "");
 
   return (
     <div className="flex justify-center items-center w-[80vw] mt-10">
@@ -53,7 +78,7 @@ export default function ViewMail({ id }: ViewMailProps) {
             alt="support"
             className="w-13 h-13 rounded-full"
           />
-          <div className="flex items-start justify-center flex-col gap-4">
+          <div className="flex items-start justify-center flex-col gap-4 w-full">
             <div className="w-full flex justify-between items-center">
               <div className="flex flex-col items-start justify-center text-sm mt-1.5">
                 <div>
@@ -71,20 +96,45 @@ export default function ViewMail({ id }: ViewMailProps) {
                   </span>
                 </div>
               </div>
-              <Button className="border border-gray-200 rounded-lg px-3 py-1.5 bg-gradient-to-r from-purple-800 to-purple-400 text-white font-bold text-sm hover:opacity-90">
+              <Button
+                onClick={handleSummarize}
+                disabled={isStreaming || isRequestPending}
+                className="border border-gray-200 rounded-lg px-3 py-1.5 bg-gradient-to-r from-purple-800 to-purple-400 text-white font-bold text-sm hover:opacity-90 disabled:opacity-50"
+              >
                 <span className="flex items-center justify-center gap-1">
-                  <LucideSparkles className="w-5 h-5" />
-                  Summarize
+                  {isStreaming || isRequestPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <LucideSparkles className="w-5 h-5" />
+                  )}
+                  {isStreaming || isRequestPending
+                    ? "Summarizing..."
+                    : "Summarize"}
                 </span>
               </Button>
             </div>
 
             <div className="flex flex-col justify-center gap-2">
-              <Badge variant="secondary" className="bg-amber-400">
+              <Badge variant="secondary" className="bg-amber-400 w-fit">
                 {mail?.data.category.type.split("_").join(" ")}
               </Badge>
               <p className="text-xs font-thin">{mail?.data.category.reason}</p>
             </div>
+
+            {(summary || isStreaming) && (
+              <div className="w-full bg-purple-50 p-4 rounded-lg border border-purple-100 mb-4 transition-all animate-in fade-in slide-in-from-top-2">
+                <h3 className="text-purple-900 font-semibold mb-2 flex items-center gap-2">
+                  <LucideSparkles className="w-4 h-4 text-purple-600" />
+                  AI Summary
+                </h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {summary}
+                  {isStreaming && (
+                    <span className="inline-block w-1.5 h-4 ml-1 bg-purple-400 animate-pulse align-middle" />
+                  )}
+                </p>
+              </div>
+            )}
 
             {mail?.data.subject && (
               <h1 className="text-2xl font-semibold mb-6 text-gray-800">

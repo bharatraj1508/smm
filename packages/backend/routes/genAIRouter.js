@@ -3,8 +3,9 @@ import genAiController from "../controllers/genAIController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.use(authenticateToken);
+// router.use(authenticateToken);
 
 router.get("/categorize-email/:emailId", genAiController.categorizeEmail);
+router.get("/summarize-email/:emailId", genAiController.generateMailSummary);
 
 export default router;

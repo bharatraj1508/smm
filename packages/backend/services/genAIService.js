@@ -1,5 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { generateCategoryPrompt } from "../utils/prompt.js";
+import {
+  generateCategoryPrompt,
+  generateSummaryPrompt,
+} from "../utils/prompt.js";
 import Mail from "../models/mail.js";
 
 class GenAIService {
@@ -44,7 +47,7 @@ class GenAIService {
       const prompt = generateCategoryPrompt(
         mail.subject,
         mail.from,
-        mail.snippet
+        mail.snippet,
       );
       const contents = [
         {
@@ -71,6 +74,52 @@ class GenAIService {
         $set: { category: resultJson },
       });
       return resultJson;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async extractSummaryContentFromBody(body) {
+    try {
+      const plainText = body
+        .replace(/<style[^>]*>.*?<\/style>/gis, "")
+        .replace(/<script[^>]*>.*?<\/script>/gis, "")
+        .replace(/<a[^>]*>.*?<\/a>/gis, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+      return plainText;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async generateSummaryContent(body) {
+    try {
+      const prompt = generateSummaryPrompt(body);
+
+      const contents = [
+        {
+          role: "user",
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ];
+      const result = await this.ai.models.generateContentStream({
+        model: this.model,
+        contents,
+      });
+
+      return result;
     } catch (error) {
       throw error;
     }

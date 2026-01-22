@@ -15,3 +15,12 @@ export function generateCategoryPrompt(subject, from, preview) {
     Preview: ${preview}
     `;
 }
+
+export function generateSummaryPrompt(body) {
+  return `
+    You are an expert email summarizer. Your task is to analyze the email content and return a concise summary of the email.
+    Summarize the content concisely in 50-100 words sentences, capturing only the main points and key action items:
+    Now summarize this email:
+    Body: ${body}
+    `;
+}
