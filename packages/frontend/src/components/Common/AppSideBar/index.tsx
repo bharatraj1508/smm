@@ -12,6 +12,7 @@ import {
   Settings,
   User2,
 } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
@@ -33,7 +34,6 @@ import {
 } from "@/components/ui/sidebar";
 import store from "@/store";
 import { useLogout } from "@/store/hooks/auth";
-import Link from "next/link";
 
 type Items = {
   title: string;

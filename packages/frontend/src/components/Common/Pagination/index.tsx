@@ -1,5 +1,9 @@
 "use client";
 
+import { JSX } from "react";
+
+import { useRouter } from "next/navigation";
+
 import {
   Pagination,
   PaginationContent,
@@ -10,8 +14,6 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import { JSX } from "react";
 
 export default function TablePagination({
   page,

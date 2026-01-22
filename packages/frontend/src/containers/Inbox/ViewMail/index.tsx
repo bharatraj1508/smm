@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useGetMailbyId } from "@/services/gmail";
-import { useSummarizeEmail } from "@/services/ai";
+
 import DOMPurify from "dompurify";
 import { LucideSparkles, Loader2 } from "lucide-react";
 import Image from "next/image";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useSummarizeEmail } from "@/services/ai";
+import { useGetMailbyId } from "@/services/gmail";
 
 type ViewMailProps = {
   id: string;

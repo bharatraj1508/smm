@@ -1,10 +1,12 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
+import TablePagination from "@/components/Common/Pagination";
 import { useEmailSyncCount, useGmailMessages } from "@/services/gmail";
+
 import { columns } from "./Column";
 import { DataTable } from "./DataTable";
-import TablePagination from "@/components/Common/Pagination";
-import { useSearchParams } from "next/navigation";
 
 const pageSize = 25;
 

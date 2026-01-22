@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+
 import useShowAPIErrorMessage from "@/hooks/api/ShowAPIErrorMessage";
 
 const baseURL = `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/ai`;
@@ -29,6 +30,6 @@ export function useSummarizeEmail() {
 
       return response.body.getReader();
     },
-    onError: showAPIErrorMessage as any,
+    onError: showAPIErrorMessage,
   });
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { EmailData } from "@/store/types/gmail";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
+
+import { EmailData } from "@/store/types/gmail";
 
 const formatFrom = (input: string): string => {
   return input.match(/^(.*?)</)?.[1].trim() || input;
