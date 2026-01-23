@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle2,
@@ -7,6 +6,8 @@ import {
   FileText,
   Clock,
 } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -146,7 +147,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-base">
-                    Our AI learns what's important to you. Automatically
+                    Our AI learns what&apos;s important to you. Automatically
                     categorize newsletters, notifications, and critical
                     messages.
                   </CardDescription>
