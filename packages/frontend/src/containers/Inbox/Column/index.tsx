@@ -51,7 +51,7 @@ export const columns: ColumnDef<EmailData>[] = [
     cell: ({ row }) => {
       const value = row.getValue<string>("from");
       return (
-        <div className="w-xs truncate text-muted-foreground">
+        <div className="max-w-xs truncate text-muted-foreground">
           {formatFrom(value)}
         </div>
       );
@@ -61,7 +61,7 @@ export const columns: ColumnDef<EmailData>[] = [
     accessorKey: "snippet",
     header: "Snippet",
     cell: ({ row }) => (
-      <div className="w-4xl truncate text-muted-foreground">
+      <div className="max-w-lg truncate text-muted-foreground">
         {row.getValue("snippet")}
       </div>
     ),

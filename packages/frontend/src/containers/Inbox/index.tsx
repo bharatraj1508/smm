@@ -22,7 +22,7 @@ export default function Inbox() {
   const { data: sync, isFetched: synced } = useEmailSyncCount();
 
   return (
-    <div className="container table-auto py-10 flex flex-col w-full">
+    <div className="flex flex-col gap-4 w-full py-6 px-4 md:px-6 lg:px-8">
       {synced && (
         <div className="flex items-center gap-2 w-fit self-end">
           <p className="text-xs font-bold text-gray-600 whitespace-nowrap">
@@ -35,18 +35,20 @@ export default function Inbox() {
           />
         </div>
       )}
-      <div>
+      <div className="w-full">
         {fetchingEmail ? (
-          <div className="w-[80vw]">
-            <div className="w-full">Loading...</div>
+          <div className="w-full flex justify-center py-20">
+            <div className="text-lg font-medium animate-pulse">Loading...</div>
           </div>
         ) : emails ? (
-          <div className="flex flex-col gap-3 items-center w-full">
+          <div className="flex flex-col gap-3 w-full">
             <DataTable columns={columns} data={emails.data} />
           </div>
         ) : (
-          <div className="w-[80vw]">
-            <div>No email Found</div>
+          <div className="w-full flex justify-center py-20">
+            <div className="text-lg font-medium text-gray-500">
+              No emails found
+            </div>
           </div>
         )}
       </div>

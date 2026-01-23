@@ -9,7 +9,7 @@ import { useRoutesWithoutRootLayout } from "@/hooks/useRoutesWithoutRootLayout";
 import { useSetupAxios } from "@/store/hooks/useSetupAxios";
 
 import { AppSidebar } from "../Common/AppSideBar";
-import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { Toaster } from "../ui/sonner";
 
 export default function AppLayout({ children }: PropsWithChildren) {
@@ -30,10 +30,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
       ) : (
         <SidebarProvider>
           <AppSidebar />
-          <main>
+          <SidebarInset>
             <SidebarTrigger />
-            <div className="lg:pl-[3rem]">{children}</div>
-          </main>
+            {children}
+          </SidebarInset>
         </SidebarProvider>
       )}
     </Fragment>
