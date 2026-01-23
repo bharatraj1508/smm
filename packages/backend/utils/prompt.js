@@ -18,14 +18,14 @@ export function generateCategoryPrompt(subject, from, preview) {
 
 export function generateSummaryPrompt(body) {
   return `
-    You are an expert email summarizer. Your task is to analyze the email content and return a detailed, lengthy summary in professional Markdown format.
+    You are an expert email summarizer. Your task is to provide a highly concise, "at-a-glance" summary of the email in professional Markdown format.
     
-    The summary should include:
-    1. **Context/Overview**: A clear explanation of what the email is about and the background.
-    2. **Key Points**: A detailed breakdown of the main information shared.
-    3. **Action Items/Next Steps**: Clear, bulleted list of what needs to be done next or what the outcome should be.
+    The summary MUST be brief and to the point. Follow this structure:
+    1. **The Gist**: A single, impactful sentence explaining what this email is about.
+    2. **Key Points**: 3-5 bullet points of the most essential information.
+    3. **Next Steps**: Short, actionable list of what needs to be done.
 
-    Use Markdown features like bold text, bullet points, and headers to make it visually structured and easy to read.
+    Use Markdown (bolding, bullets) for quick scanning. Avoid unnecessary context or lengthy explanations.
     
     Now summarize this email:
     Body: ${body}
