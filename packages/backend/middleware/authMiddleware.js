@@ -168,7 +168,7 @@ export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
       "X-RateLimit-Limit": maxRequests,
       "X-RateLimit-Remaining": maxRequests - clientData.requests,
       "X-RateLimit-Reset": new Date(
-        clientData.windowStart + windowMs
+        clientData.windowStart + windowMs,
       ).toISOString(),
     });
 
@@ -182,14 +182,9 @@ export const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    const allowedOrigins = [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:3001",
-      "http://localhost:8000",
-      "http://127.0.0.1:8000",
-    ];
+    const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+      .split(",")
+      .filter(Boolean);
 
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
