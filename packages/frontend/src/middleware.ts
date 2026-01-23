@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import { NextURL } from "next/dist/server/web/next-url";
 import { NextResponse } from "next/server";
 
@@ -34,10 +33,23 @@ export const config = {
   ],
 };
 
+// interface for token payload
+interface JwtPayload {
+  exp?: number;
+}
+
 // function to decode token validity
 function decodeToken(token: string): boolean {
   try {
-    const decodedToken = jwt.decode(token) as jwt.JwtPayload;
+    if (!token) return false;
+
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+
+    const payload = parts[1];
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = atob(base64);
+    const decodedToken = JSON.parse(jsonPayload) as JwtPayload;
 
     if (!decodedToken || !decodedToken.exp) {
       return false;
