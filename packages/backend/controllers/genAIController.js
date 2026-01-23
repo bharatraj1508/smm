@@ -50,6 +50,8 @@ class GenAIController {
       const body = await geniAIService.extractSummaryContentFromBody(mail.body);
       const stream = await geniAIService.generateSummaryContent(body);
 
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+
       for await (const chunk of stream) {
         const text = chunk.text;
         if (text) {

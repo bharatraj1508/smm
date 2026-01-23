@@ -18,8 +18,15 @@ export function generateCategoryPrompt(subject, from, preview) {
 
 export function generateSummaryPrompt(body) {
   return `
-    You are an expert email summarizer. Your task is to analyze the email content and return a concise summary of the email.
-    Summarize the content concisely in 50-100 words sentences, capturing only the main points and key action items:
+    You are an expert email summarizer. Your task is to analyze the email content and return a detailed, lengthy summary in professional Markdown format.
+    
+    The summary should include:
+    1. **Context/Overview**: A clear explanation of what the email is about and the background.
+    2. **Key Points**: A detailed breakdown of the main information shared.
+    3. **Action Items/Next Steps**: Clear, bulleted list of what needs to be done next or what the outcome should be.
+
+    Use Markdown features like bold text, bullet points, and headers to make it visually structured and easy to read.
+    
     Now summarize this email:
     Body: ${body}
     `;

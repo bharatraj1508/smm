@@ -5,6 +5,7 @@ import { useState } from "react";
 import DOMPurify from "dompurify";
 import { LucideSparkles, Loader2 } from "lucide-react";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -127,17 +128,23 @@ export default function ViewMail({ id }: ViewMailProps) {
             </div>
 
             {(summary || isStreaming) && (
-              <div className="w-full bg-purple-50 p-4 rounded-lg border border-purple-100 mb-4 transition-all animate-in fade-in slide-in-from-top-2">
-                <h3 className="text-purple-900 font-semibold mb-2 flex items-center gap-2">
-                  <LucideSparkles className="w-4 h-4 text-purple-600" />
-                  AI Summary
-                </h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {summary}
+              <div className="w-full bg-purple-50/50 p-6 rounded-xl border border-purple-100 mb-8 transition-all animate-in fade-in slide-in-from-top-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 bg-purple-100/50 rounded-lg">
+                    <LucideSparkles className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h3 className="text-purple-900 font-bold text-lg">
+                    AI Insights & Summary
+                  </h3>
+                </div>
+                <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed
+                  prose-headings:text-purple-900 prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2
+                  prose-p:mb-3 prose-li:mb-1 prose-strong:text-purple-800 prose-ul:my-2 prose-ol:my-2">
+                  <ReactMarkdown>{summary}</ReactMarkdown>
                   {isStreaming && (
-                    <span className="inline-block w-1.5 h-4 ml-1 bg-purple-400 animate-pulse align-middle" />
+                    <span className="inline-block w-2 h-4 ml-1 bg-purple-400 animate-pulse align-middle rounded-sm" />
                   )}
-                </p>
+                </div>
               </div>
             )}
 
