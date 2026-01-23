@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useSummarizeEmail } from "@/services/ai";
 import { useGetMailbyId } from "@/services/gmail";
 
+import ViewMailSkeleton from "./ViewMailSkeleton";
+
 type ViewMailProps = {
   id: string;
 };
@@ -65,7 +67,8 @@ export default function ViewMail({ id }: ViewMailProps) {
     }
   };
 
-  if (isPending) return <div>Loading...</div>;
+  if (isPending) return <ViewMailSkeleton />;
+
 
   const safeHTML = cleanEmailHTML(mail?.data.body || "");
 

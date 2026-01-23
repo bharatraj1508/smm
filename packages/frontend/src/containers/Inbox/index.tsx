@@ -7,6 +7,7 @@ import { useEmailSyncCount, useGmailMessages } from "@/services/gmail";
 
 import { columns } from "./Column";
 import { DataTable } from "./DataTable";
+import InboxSkeleton from "./InboxSkeleton";
 
 const pageSize = 25;
 
@@ -37,10 +38,9 @@ export default function Inbox() {
       )}
       <div className="w-full">
         {fetchingEmail ? (
-          <div className="w-full flex justify-center py-20">
-            <div className="text-lg font-medium animate-pulse">Loading...</div>
-          </div>
+          <InboxSkeleton />
         ) : emails ? (
+
           <div className="flex flex-col gap-3 w-full">
             <DataTable columns={columns} data={emails.data} />
           </div>
