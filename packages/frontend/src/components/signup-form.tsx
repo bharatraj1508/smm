@@ -23,8 +23,6 @@ import { RegisterFormFields } from "@/store/types/auth";
 
 import FormControl from "./Common/FormControl";
 
-
-
 const RegisterSchema = Joi.object<RegisterFormFields>({
   firstName: Joi.string().required().label("First name"),
   lastName: Joi.string().required().label("Last name"),
@@ -59,7 +57,8 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const { mutateAsync: signup, isPending } = useAuthRegister();
 
   const handleGoogleLogin = async () => {
-    window.location.href = "http://localhost:3002/api/auth/google";
+    const url = process.env.NEXT_PUBLIC_BASE_API_URL;
+    window.location.href = `${url}/api/auth/google`;
   };
 
   const onSubmit: SubmitHandler<RegisterFormFields> = async (formdata) => {
