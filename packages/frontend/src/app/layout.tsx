@@ -1,12 +1,8 @@
-"use client";
-
 import "./globals.css";
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
 
 import AppLayout from "@/components/AppLayout";
-import { QueryProvider } from "@/lib/query-client-provider";
-import store, { persistor } from "@/store";
+
+import { Providers } from "./providers";
 
 export default function RootLayout({
   children,
@@ -16,13 +12,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Provider store={store}>
-          <PersistGate persistor={persistor} loading={null}>
-            <QueryProvider>
-              <AppLayout>{children}</AppLayout>
-            </QueryProvider>
-          </PersistGate>
-        </Provider>
+        <Providers>
+          <AppLayout>{children}</AppLayout>
+        </Providers>
       </body>
     </html>
   );

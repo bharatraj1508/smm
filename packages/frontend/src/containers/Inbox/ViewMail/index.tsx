@@ -34,12 +34,12 @@ function cleanEmailHTML(rawHTML: string) {
   return sanitized;
 }
 
-function extractPlainText(rawHTML: string): string {
-  if (!rawHTML) return "";
-  const htmlIndex = rawHTML.search(/<\s*(?:!DOCTYPE|html)/i);
-  const beforeHTML = rawHTML.slice(0, htmlIndex);
-  return beforeHTML;
-}
+// function extractPlainText(rawHTML: string): string {
+//   if (!rawHTML) return "";
+//   const htmlIndex = rawHTML.search(/<\s*(?:!DOCTYPE|html)/i);
+//   const beforeHTML = rawHTML.slice(0, htmlIndex);
+//   return beforeHTML;
+// }
 
 export default function ViewMail({ id }: ViewMailProps) {
   const { data: mail, isPending } = useGetMailbyId(id);

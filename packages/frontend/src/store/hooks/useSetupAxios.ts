@@ -68,14 +68,10 @@ export function useSetupAxios(instance: AxiosInstance) {
             response?.status === StatusCode.ClientErrorUnauthorized &&
             isAuthFailed
           ) {
-            let msg;
-            if (authError === "Invalid or expired token") {
-              msg = "Session Expired. Please login to proceed";
-            }
-
-            authError === "Invalid or expired token"
-              ? (msg = "Session Expired. Please login to proceed")
-              : (msg = "Please login to proceed");
+            const msg =
+              authError === "Invalid or expired token"
+                ? "Session Expired. Please login to proceed"
+                : "Please login to proceed";
 
             toast.info(msg);
             logout();

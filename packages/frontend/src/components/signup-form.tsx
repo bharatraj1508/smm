@@ -63,7 +63,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   };
 
   const onSubmit: SubmitHandler<RegisterFormFields> = async (formdata) => {
-    const { confirmPassword, firstName, lastName, ...rest } = formdata;
+    const { firstName, lastName, ...rest } = formdata;
     const name = `${firstName} ${lastName}`;
     const payload = {
       ...rest,
