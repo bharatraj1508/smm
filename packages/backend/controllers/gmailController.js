@@ -179,11 +179,11 @@ class GmailController {
             : "No emails found",
       });
     } catch (error) {
-      console.error("Error in getEmailById controller:", error);
+      console.error("Error in syncMails controller:", error);
       res.status(StatusCode.ServerErrorInternal).json({
         success: false,
         error: error.message,
-        message: "Failed to retrieve email",
+        message: "Failed to sync emails",
       });
     }
   }

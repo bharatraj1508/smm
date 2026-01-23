@@ -68,25 +68,44 @@ class GmailService {
       let messageIds = [];
 
       if (lastHistoryId) {
-        // Incremental sync — only get new emails since last sync
-        const historyRes = await gmail.users.history.list({
-          userId: "me",
-          startHistoryId: lastHistoryId,
-          historyTypes: ["messageAdded"], // only new messages
-        });
+        try {
+          // Incremental sync — only get new emails since last sync
+          const historyRes = await gmail.users.history.list({
+            userId: "me",
+            startHistoryId: lastHistoryId,
+            historyTypes: ["messageAdded"], // only new messages
+          });
 
-        const history = historyRes.data.history || [];
+          const history = historyRes.data.history || [];
 
-        history.forEach((h) => {
-          if (h.messagesAdded) {
-            h.messagesAdded.forEach((m) => {
-              messageIds.push(m.message.id);
-            });
+          history.forEach((h) => {
+            if (h.messagesAdded) {
+              h.messagesAdded.forEach((m) => {
+                messageIds.push(m.message.id);
+              });
+            }
+          });
+
+          // Deduplicate message IDs
+          messageIds = [...new Set(messageIds)];
+        } catch (historyError) {
+          // Gmail history IDs expire after ~7 days. If expired, it returns 404.
+          // Fall back to full sync in this case.
+          if (
+            historyError.code === 404 ||
+            historyError.response?.status === 404
+          ) {
+            console.warn(
+              "History ID expired or not found, falling back to full sync",
+            );
+            // messageIds remains empty, triggering full sync below
+          } else {
+            throw historyError;
           }
-        });
+        }
       }
 
-      // If no history yet (first-time sync), do a full fetch
+      // If no history yet (first-time sync or expired history), do a full fetch
       if (!lastHistoryId || messageIds.length === 0) {
         const listRes = await gmail.users.messages.list({
           userId: "me",
@@ -98,63 +117,71 @@ class GmailService {
 
       // Fetch full message details
       const emailPromises = messageIds.map(async (id) => {
-        const email = await gmail.users.messages.get({
-          userId: "me",
-          id,
-          format: "full",
-        });
+        try {
+          const email = await gmail.users.messages.get({
+            userId: "me",
+            id,
+            format: "full",
+          });
 
-        const payload = email.data.payload;
-        const headers = payload.headers;
+          const payload = email.data.payload;
+          const headers = payload.headers;
 
-        const subject = headers.find((h) => h.name === "Subject")?.value || "";
-        const from = headers.find((h) => h.name === "From")?.value || "";
-        const toHeader = headers.find((h) => h.name === "To")?.value || "";
-        const to = toHeader ? toHeader.split(",").map((a) => a.trim()) : [];
-        const dateHeader = headers.find((h) => h.name === "Date")?.value;
-        const date = dateHeader ? new Date(dateHeader) : null;
+          const subject =
+            headers.find((h) => h.name === "Subject")?.value || "";
+          const from = headers.find((h) => h.name === "From")?.value || "";
+          const toHeader = headers.find((h) => h.name === "To")?.value || "";
+          const to = toHeader ? toHeader.split(",").map((a) => a.trim()) : [];
+          const dateHeader = headers.find((h) => h.name === "Date")?.value;
+          const date = dateHeader ? new Date(dateHeader) : null;
 
-        const decodeBase64 = (str) =>
-          Buffer.from(
-            str.replace(/-/g, "+").replace(/_/g, "/"),
-            "base64"
-          ).toString("utf-8");
+          const decodeBase64 = (str) =>
+            Buffer.from(
+              str.replace(/-/g, "+").replace(/_/g, "/"),
+              "base64",
+            ).toString("utf-8");
 
-        const getBody = (payload) => {
-          if (payload.body?.data) return decodeBase64(payload.body.data);
-          if (payload.parts?.length)
-            return payload.parts.map(getBody).join("\n");
-          return "";
-        };
+          const getBody = (payload) => {
+            if (payload.body?.data) return decodeBase64(payload.body.data);
+            if (payload.parts?.length)
+              return payload.parts.map(getBody).join("\n");
+            return "";
+          };
 
-        const body = getBody(payload);
-        const labels = email.data.labelIds || [];
+          const body = getBody(payload);
+          const labels = email.data.labelIds || [];
 
-        const mailDoc = {
-          user: user._id,
-          mailId: email.data.id,
-          threadId: email.data.threadId,
-          subject,
-          from,
-          to,
-          snippet: email.data.snippet,
-          body,
-          labels,
-          date,
-          lastSyncedAt: new Date(),
-        };
+          const mailDoc = {
+            user: user._id,
+            mailId: email.data.id,
+            threadId: email.data.threadId,
+            subject,
+            from,
+            to,
+            snippet: email.data.snippet,
+            body,
+            labels,
+            date,
+            lastSyncedAt: new Date(),
+          };
 
-        // Upsert into DB
-        await Mail.findOneAndUpdate(
-          { mailId: mailDoc.mailId },
-          { $set: mailDoc },
-          { upsert: true }
-        );
+          // Upsert into DB
+          await Mail.findOneAndUpdate(
+            { mailId: mailDoc.mailId },
+            { $set: mailDoc },
+            { upsert: true },
+          );
 
-        return mailDoc;
+          return mailDoc;
+        } catch (msgError) {
+          console.error(`Error fetching message ${id}:`, msgError.message);
+          return null;
+        }
       });
 
-      const emails = await Promise.all(emailPromises);
+      const emails = (await Promise.all(emailPromises)).filter(
+        (email) => email !== null,
+      );
       emails.sort((a, b) => b.date - a.date);
 
       const profileRes = await gmail.users.getProfile({ userId: "me" });
@@ -227,7 +254,7 @@ class GmailService {
     } catch (error) {
       console.error(
         "Error getting email sync count and latest lastSyncedAt:",
-        error
+        error,
       );
       throw new Error(`Failed to get email sync info: ${error.message}`);
     }
@@ -243,7 +270,7 @@ class GmailService {
     } catch (error) {
       console.error(
         "Error getting email sync count and latest lastSyncedAt:",
-        error
+        error,
       );
       throw new Error(`Failed to get email sync info: ${error.message}`);
     }
