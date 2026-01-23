@@ -18,7 +18,8 @@ function DashBoard() {
   } = store.getState();
 
   const handleGoogleLogin = async () => {
-    window.location.href = "http://localhost:3002/api/auth/google";
+    const url = process.env.NEXT_PUBLIC_BASE_API_URL;
+    window.location.href = `${url}/api/auth/google`;
   };
 
   const formatDate = (date: Date) => {
