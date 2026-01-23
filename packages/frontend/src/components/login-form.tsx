@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { useAuthLogin } from "@/services/auth";
 import { LoginFields } from "@/store/types/auth";
 
-
 const LoginSchema = Joi.object<LoginFields>({
   email: Joi.string()
     .required()
@@ -48,7 +47,8 @@ export function LoginForm({
   const { mutateAsync: login, isPending } = useAuthLogin();
 
   const handleGoogleLogin = async () => {
-    window.location.href = "http://localhost:3002/api/auth/google";
+    const url = process.env.NEXT_PUBLIC_BASE_API_URL;
+    window.location.href = `${url}/api/auth/google`;
   };
 
   const onSubmit: SubmitHandler<LoginFields> = async (formData) => {
