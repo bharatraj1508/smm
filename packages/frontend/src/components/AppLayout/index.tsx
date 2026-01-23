@@ -18,9 +18,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
   const pathname = usePathname();
 
-  const isRouteWithRootLayout = routesWithoutRootLayout.some((route) =>
-    pathname.startsWith(route)
-  );
+  const isRouteWithRootLayout =
+    routesWithoutRootLayout.some((route) => pathname.startsWith(route)) ||
+    pathname === "/" ||
+    pathname === "/privacy-policy" ||
+    pathname === "/terms";
 
   return (
     <Fragment>

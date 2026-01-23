@@ -27,7 +27,6 @@ export function middleware(req: NextRequest) {
 // Make sure matcher covers all protected routes
 export const config = {
   matcher: [
-    "/",
     "/dashboard/:path*", // Protect dashboard route and sub-routes
     "/auth/login",
   ],
