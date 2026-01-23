@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import User from "../models/user.js";
-import { MongoMemoryServer } from "mongodb-memory-server";
+// Removed static import of MongoMemoryServer to avoid crashes in production
 
 class DatabaseService {
   constructor() {
@@ -13,15 +13,18 @@ class DatabaseService {
       await mongoose.set("strictQuery", true);
 
       if (process.env.DB_STATE === "memory") {
+        const { MongoMemoryServer } = await import("mongodb-memory-server");
         const mongod = await MongoMemoryServer.create();
         const uri = mongod.getUri();
         process.env.MONGODB_URI = uri;
         global.__MONGOD__ = mongod;
       }
-      await mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
+
+      if (!process.env.MONGODB_URI) {
+        throw new Error("MONGODB_URI environment variable is not defined");
+      }
+
+      await mongoose.connect(process.env.MONGODB_URI);
       console.log("MongoDB URI:", process.env.MONGODB_URI);
 
       // Handle nodemon restarts

@@ -7,16 +7,25 @@ import Mail from "../models/mail.js";
 
 class GenAIService {
   constructor() {
-    const apk = process.env.GEMINI_API_KEY;
-    if (!apk) {
-      throw new Error("API key is not provided");
+    this.apk = process.env.GEMINI_API_KEY;
+    if (!this.apk && process.env.NODE_ENV === "production") {
+      console.warn("GEMINI_API_KEY is not provided");
     }
-    this.ai = new GoogleGenAI({ apiKey: apk });
+    this.ai = this.apk ? new GoogleGenAI({ apiKey: this.apk }) : null;
     this.model = "gemini-2.0-flash-lite";
+  }
+
+  _checkConfig() {
+    if (!this.ai) {
+      throw new Error(
+        "GenAIService not initialized: GEMINI_API_KEY is missing"
+      );
+    }
   }
 
   async generateCategorizeContent(mail) {
     try {
+      this._checkConfig();
       const config = {
         responseMimeType: "application/json",
         responseSchema: {
@@ -102,6 +111,7 @@ class GenAIService {
 
   async generateSummaryContent(body) {
     try {
+      this._checkConfig();
       const prompt = generateSummaryPrompt(body);
 
       const contents = [

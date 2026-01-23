@@ -17,7 +17,10 @@ async function initializeDatabase() {
     await databaseService.connect();
   } catch (error) {
     console.error("Failed to connect to database:", error);
-    process.exit(1);
+    // Don't exit process in serverless environment
+    if (!process.env.VERCEL) {
+      process.exit(1);
+    }
   }
 }
 
@@ -140,5 +143,13 @@ async function startServer() {
   }
 }
 
-// Start the server
-startServer();
+// Initialize database
+initializeDatabase();
+
+// Export the app for Vercel
+export default app;
+
+// Start the server only if not running on Vercel
+if (!process.env.VERCEL) {
+  startServer();
+}

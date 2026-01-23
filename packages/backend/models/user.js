@@ -4,7 +4,15 @@ import bcrypt from "bcrypt";
 
 // Encryption configuration
 const ALGORITHM = "aes-256-cbc";
-const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
+const ENCRYPTION_KEY_RAW = process.env.ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY_RAW && process.env.NODE_ENV === "production") {
+  console.warn(
+    "Warning: ENCRYPTION_KEY environment variable is missing in production!"
+  );
+}
+const ENCRYPTION_KEY = ENCRYPTION_KEY_RAW
+  ? Buffer.from(ENCRYPTION_KEY_RAW, "hex")
+  : Buffer.alloc(32); // Fallback to avoid crash during initialization
 
 // Encrypt function
 function encrypt(text) {
