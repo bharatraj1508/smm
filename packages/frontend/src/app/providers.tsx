@@ -1,21 +1,24 @@
 "use client";
 
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
-
+import { ThemeProvider } from "@/components/theme-provider";
+import { StoreProvider } from "@/components/store-provider";
 import { SocketManager } from "@/components/Common/SocketManager";
 import { QueryProvider } from "@/lib/query-client-provider";
-import store, { persistor } from "@/store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <Provider store={store}>
-      <PersistGate persistor={persistor} loading={null}>
-        <QueryProvider>
+    <StoreProvider>
+      <QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <SocketManager />
           {children}
-        </QueryProvider>
-      </PersistGate>
-    </Provider>
+        </ThemeProvider>
+      </QueryProvider>
+    </StoreProvider>
   );
 }

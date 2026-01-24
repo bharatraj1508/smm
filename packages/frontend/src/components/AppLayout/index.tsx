@@ -11,6 +11,7 @@ import { useSetupAxios } from "@/store/hooks/useSetupAxios";
 import { AppSidebar } from "../Common/AppSideBar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { Toaster } from "../ui/sonner";
+import { ModeToggle } from "../ui/mode-toggle";
 
 export default function AppLayout({ children }: PropsWithChildren) {
   useSetupAxios(axios);
@@ -26,15 +27,20 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
   return (
     <Fragment>
-      <Toaster />
+      <Toaster position="top-right" />
       {isRouteWithRootLayout ? (
         <main>{children}</main>
       ) : (
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <SidebarTrigger />
-            {children}
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+              <SidebarTrigger className="-ml-1" />
+              <div className="ml-auto">
+                <ModeToggle />
+              </div>
+            </header>
+            <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
           </SidebarInset>
         </SidebarProvider>
       )}

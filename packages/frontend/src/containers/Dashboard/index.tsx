@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEmailSyncCount, useSyncMails } from "@/services/gmail";
 import store from "@/store";
+import { Spinner } from "@/components/ui/spinner";
 
 function DashBoard() {
   const { data, isFetching } = useEmailSyncCount();
@@ -47,10 +48,13 @@ function DashBoard() {
         </div>
         <Button onClick={handleSync} disabled={isPending} className="gap-2">
           {isPending ? (
-            "Syncing..."
+            <div className="flex items-center gap-2">
+              <Spinner data-icon="inline-start" />
+              Syncing...
+            </div>
           ) : (
             <>
-              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-white dark:bg-black animate-pulse" />
               Sync Now
             </>
           )}
