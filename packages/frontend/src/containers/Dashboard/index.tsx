@@ -82,7 +82,13 @@ function DashBoard() {
             </svg>
           </div>
           <div className="p-6 pt-0">
-            <div className="text-2xl font-bold">{data?.count || 0}</div>
+            <div className="text-2xl font-bold">
+              {isFetching ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                data?.count || 0
+              )}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
               Emails stored in our database
             </p>
@@ -110,7 +116,11 @@ function DashBoard() {
           </div>
           <div className="p-6 pt-0">
             <div className="text-2xl font-bold">
-              {data?.recentlySyncedCount || 0}
+              {isFetching ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                data?.recentlySyncedCount || 0
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Emails processed in last 60 mins
@@ -140,7 +150,13 @@ function DashBoard() {
           </div>
           <div className="p-6 pt-0">
             <div className="text-lg font-bold truncate">
-              {data?.latestSyncedAt ? formatDate(data.latestSyncedAt) : "Never"}
+              {isFetching ? (
+                <Skeleton className="h-7 w-32" />
+              ) : data?.latestSyncedAt ? (
+                formatDate(data.latestSyncedAt)
+              ) : (
+                "Never"
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Time since last successful sync
@@ -169,7 +185,9 @@ function DashBoard() {
           </div>
           <div className="p-6 pt-0 ">
             <div className="flex items-center gap-2">
-              {data?.isAutomaticSyncActive ? (
+              {isFetching ? (
+                <Skeleton className="h-7 w-20" />
+              ) : data?.isAutomaticSyncActive ? (
                 <>
                   <CheckCircle className="w-6 h-6 text-green-500" />
                   <div className="text-lg font-bold text-green-500">Active</div>

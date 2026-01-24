@@ -9,12 +9,12 @@ import { toast } from "sonner";
 import store from "@/store";
 import { setConnected, setDisconnected } from "@/store/slices/socket";
 
+import useStoreSelector from "@/store/hooks/useStoreSelector";
+
 export const useSocket = () => {
   const socketRef = useRef<Socket | null>(null);
   const queryClient = useQueryClient();
-  const {
-    auth: { accessToken },
-  } = store.getState();
+  const accessToken = useStoreSelector((state) => state.auth.accessToken);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -27,8 +27,6 @@ export const useSocket = () => {
         auth: { token: accessToken },
         transports: ["websocket"],
       });
-
-
 
       socketRef.current.on("connect", () => {
         console.log("Socket connected");
