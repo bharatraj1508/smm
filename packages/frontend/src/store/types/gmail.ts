@@ -7,6 +7,8 @@ export interface EmailQueryParams {
 export interface SyncCountResponse {
   count: number;
   latestSyncedAt: Date;
+  isAutomaticSyncActive: boolean;
+  recentlySyncedCount: number;
 }
 
 export interface EmailData {

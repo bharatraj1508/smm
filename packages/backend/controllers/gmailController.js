@@ -147,10 +147,18 @@ class GmailController {
   async getEmailSyncCount(req, res) {
     try {
       const user = req.user;
-      const { count, latestSyncedAt } = await gmailService.getEmailSyncCount(
-        user._id,
-      );
-      res.status(StatusCode.SuccessOK).send({ count, latestSyncedAt });
+      const {
+        count,
+        latestSyncedAt,
+        isAutomaticSyncActive,
+        recentlySyncedCount,
+      } = await gmailService.getEmailSyncCount(user._id);
+      res.status(StatusCode.SuccessOK).send({
+        count,
+        latestSyncedAt,
+        isAutomaticSyncActive,
+        recentlySyncedCount,
+      });
     } catch (error) {
       console.error("Error in getEmailById controller:", error);
       res.status(StatusCode.ServerErrorInternal).json({

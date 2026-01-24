@@ -1,6 +1,7 @@
 import authService from "./authService.js";
 import Mail from "../models/mail.js";
 import User from "../models/user.js";
+import Settings from "../models/settings.js";
 
 class GmailService {
   constructor() {
@@ -196,6 +197,13 @@ class GmailService {
         });
       }
 
+      // Update Settings lastSyncedAt
+      await Settings.findOneAndUpdate(
+        { userId: user._id },
+        { lastSyncedAt: new Date() },
+        { new: true },
+      );
+
       return emails;
     } catch (error) {
       console.error("Error getting emails:", error);
@@ -245,15 +253,35 @@ class GmailService {
         .select("lastSyncedAt")
         .lean();
 
-      const [count, latestSyncedMail] = await Promise.all([
-        countPromise,
-        latestSyncedMailPromise,
-      ]);
-      const latestSyncedAt = latestSyncedMail
-        ? latestSyncedMail.lastSyncedAt
-        : null;
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentCountPromise = Mail.countDocuments({
+        user,
+        lastSyncedAt: { $gte: oneHourAgo },
+      });
 
-      return { count, latestSyncedAt };
+      const settingsPromise = Settings.findOne({ userId: user }).select(
+        "automaticSync lastSyncedAt",
+      );
+
+      const [count, latestSyncedMail, settingsDoc, recentlySyncedCount] =
+        await Promise.all([
+          countPromise,
+          latestSyncedMailPromise,
+          settingsPromise,
+          recentCountPromise,
+        ]);
+      const latestSyncedAt =
+        settingsDoc?.lastSyncedAt || latestSyncedMail?.lastSyncedAt || null;
+      const isAutomaticSyncActive = settingsDoc
+        ? settingsDoc.automaticSync
+        : false;
+
+      return {
+        count,
+        latestSyncedAt,
+        isAutomaticSyncActive,
+        recentlySyncedCount,
+      };
     } catch (error) {
       console.error(
         "Error getting email sync count and latest lastSyncedAt:",

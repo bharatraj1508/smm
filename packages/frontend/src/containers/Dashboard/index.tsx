@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { CheckCircle, PlusIcon } from "lucide-react";
+import { CheckCircle, PlusIcon, XCircle } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -37,87 +37,151 @@ function DashBoard() {
   };
 
   return googleId ? (
-    <div className="flex flex-col gap-4 w-[80vw] h-[80vh]">
-      <h2 className="text-2xl font-bold">Overview</h2>
-      <div className="w-xs border border-gray-200 rounded-lg shadow-md">
-        {isFetching ? (
-          <div className="flex flex-col text-sm gap-8 p-6">
-            <div className="flex flex-col gap-1 text-sm">
-              <Skeleton className="h-6 w-30" />
-              <Skeleton className="h-10 w-20" />
-              <Skeleton className="h-6 w-50" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <Skeleton className="h-6 w-30" />
-              <Skeleton className="h-6 w-50" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <Skeleton className="h-6 w-60" />
-              <Skeleton className="h-10 w-20" />
-            </div>
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground mt-1">
+            Overview of your email synchronization status.
+          </p>
+        </div>
+        <Button onClick={handleSync} disabled={isPending} className="gap-2">
+          {isPending ? (
+            "Syncing..."
+          ) : (
+            <>
+              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              Sync Now
+            </>
+          )}
+        </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Total Synced Card */}
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+          <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium text-muted-foreground">
+              Total Emails Synced
+            </h3>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <path d="M22 17a2 2 0 0 1-2 2h-2v2l-4-4h6a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2v4l4-4h8" />
+            </svg>
           </div>
-        ) : (
-          <div>
-            <div className="flex flex-col p-6 text-sm gap-8">
-              <div className="flex flex-col text-sm">
-                <span className="font-bold text-neutral-600">
-                  Email Sync Status
-                </span>
-                <span className="text-3xl font-bold">{data?.count}</span>
-                <span className="font-medium text-neutral-400">
-                  with SMM Database
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-neutral-600 font-bold">Last Sync</span>
-                <span className="font-medium text-neutral-400">
-                  {data?.latestSyncedAt ? (
-                    formatDate(data?.latestSyncedAt)
-                  ) : (
-                    <div>Not Synced Yet</div>
-                  )}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-8 h-8 text-green-500" />
-                  <p className="text-green-500 text-sm font-bold">
-                    Automatic Sync Active
-                  </p>
-                </div>
-                <Button
-                  className="w-fit"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSync}
-                  loading={isPending}
-                >
-                  {isPending ? "Syncing..." : "Sync Now"}
-                </Button>
-              </div>
-            </div>
-            <div className="border-t border-gray-200 w-full rounded-xs">
-              <div className="px-6 py-2 text-xs">
-                <ul className="list-disc space-y-2 text-neutral-600 font-thin">
-                  <li>
-                    <strong className="text-gray-600 font-bold">
-                      Automatic Sync Status
-                    </strong>
-                    : All fetched emails are automatically stored in the SMM
-                    database for your convenience.
-                  </li>
-                  <li>
-                    <strong className="text-gray-600 font-bold">
-                      Sync Now
-                    </strong>
-                    : This will synchronize the first 20 emails from your
-                    mailbox with the SMM database.
-                  </li>
-                </ul>
-              </div>
-            </div>
+          <div className="p-6 pt-0">
+            <div className="text-2xl font-bold">{data?.count || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Emails stored in our database
+            </p>
           </div>
-        )}
+        </div>
+
+        {/* Recently Synced Card */}
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+          <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium text-muted-foreground">
+              Synced Last Hour
+            </h3>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <div className="p-6 pt-0">
+            <div className="text-2xl font-bold">
+              {data?.recentlySyncedCount || 0}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Emails processed in last 60 mins
+            </p>
+          </div>
+        </div>
+
+        {/* Last Sync Time Card */}
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+          <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium text-muted-foreground">
+              Last Sync
+            </h3>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <div className="p-6 pt-0">
+            <div className="text-lg font-bold truncate">
+              {data?.latestSyncedAt ? formatDate(data.latestSyncedAt) : "Never"}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Time since last successful sync
+            </p>
+          </div>
+        </div>
+
+        {/* Automatic Sync Status Card */}
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+          <div className="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium text-muted-foreground">
+              Automatic Sync
+            </h3>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <div className="p-6 pt-0 ">
+            <div className="flex items-center gap-2">
+              {data?.isAutomaticSyncActive ? (
+                <>
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  <div className="text-lg font-bold text-green-500">Active</div>
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-6 h-6 text-red-500" />
+                  <div className="text-lg font-bold text-red-500">Inactive</div>
+                </>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              If Active, emails will be automatically synced every 15 minutes
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   ) : (

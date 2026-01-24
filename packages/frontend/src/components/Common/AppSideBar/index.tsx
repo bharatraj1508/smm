@@ -71,7 +71,7 @@ const items: Items[] = [
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
     pathname: "settings",
   },

@@ -13,19 +13,39 @@ import { Switch } from "@/components/ui/switch";
 import { useGetSettings, useUpdateSettings } from "@/services/settings";
 import { Label } from "@/components/ui/label";
 
+import { Settings as SettingsType } from "@/store/types/settings";
+import { Spinner } from "@/components/ui/spinner";
+
 export default function Settings() {
   const { data: settings, isLoading } = useGetSettings();
   const { mutate: updateSettings, isPending } = useUpdateSettings();
-  const [automaticSync, setAutomaticSync] = useState(false);
+  const [localSettings, setLocalSettings] = useState<Partial<SettingsType>>({});
 
   useEffect(() => {
     if (settings) {
-      setAutomaticSync(settings.automaticSync);
+      setLocalSettings(settings);
     }
   }, [settings]);
 
+  const handleChange = <K extends keyof SettingsType>(
+    key: K,
+    value: SettingsType[K],
+  ) => {
+    setLocalSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const hasChanges = () => {
+    if (!settings || !localSettings) return false;
+    return (Object.keys(localSettings) as Array<keyof SettingsType>).some(
+      (key) => localSettings[key] !== settings[key],
+    );
+  };
+
   const handleSave = () => {
-    updateSettings({ automaticSync });
+    updateSettings(localSettings);
   };
 
   if (isLoading) {
@@ -51,14 +71,23 @@ export default function Settings() {
             </div>
             <Switch
               id="automatic-sync"
-              checked={automaticSync}
-              onCheckedChange={setAutomaticSync}
+              checked={localSettings?.automaticSync || false}
+              onCheckedChange={(checked) =>
+                handleChange("automaticSync", checked)
+              }
             />
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={isPending}>
-              {isPending ? "Saving..." : "Save Changes"}
+            <Button onClick={handleSave} disabled={isPending || !hasChanges()}>
+              {isPending ? (
+                <>
+                  <Spinner data-icon="inline-start" />
+                  Saving
+                </>
+              ) : (
+                <p>Save</p>
+              )}
             </Button>
           </div>
         </CardContent>

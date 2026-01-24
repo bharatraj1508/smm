@@ -12,6 +12,10 @@ const settingsSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    lastSyncedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );
