@@ -107,7 +107,7 @@ export function AppSidebar() {
                     key={item.title}
                     className={classNames(
                       isSelected &&
-                        "rounded-md border border-sidebar-primary bg-white",
+                        "rounded-md border border-sidebar-ring",
                     )}
                   >
                     <SidebarMenuButton asChild>
