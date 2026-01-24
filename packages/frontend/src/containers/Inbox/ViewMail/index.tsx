@@ -70,7 +70,6 @@ export default function ViewMail({ id }: ViewMailProps) {
 
   if (isPending) return <ViewMailSkeleton />;
 
-
   const safeHTML = cleanEmailHTML(mail?.data.body || "");
 
   return (
@@ -137,9 +136,11 @@ export default function ViewMail({ id }: ViewMailProps) {
                     AI Insights & Summary
                   </h3>
                 </div>
-                <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed
+                <div
+                  className="prose prose-sm max-w-none text-gray-700 leading-relaxed
                   prose-headings:text-purple-900 prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2
-                  prose-p:mb-3 prose-li:mb-1 prose-strong:text-purple-800 prose-ul:my-2 prose-ol:my-2">
+                  prose-p:mb-3 prose-li:mb-1 prose-strong:text-purple-800 prose-ul:my-2 prose-ol:my-2"
+                >
                   <ReactMarkdown>{summary}</ReactMarkdown>
                   {isStreaming && (
                     <span className="inline-block w-2 h-4 ml-1 bg-purple-400 animate-pulse align-middle rounded-sm" />

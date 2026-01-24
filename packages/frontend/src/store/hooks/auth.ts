@@ -41,7 +41,7 @@ export function useLogout() {
       {},
       {
         withCredentials: true,
-      }
+      },
     );
 
     // Clear the accessToken cookie

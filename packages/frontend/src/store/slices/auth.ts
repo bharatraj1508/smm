@@ -26,5 +26,5 @@ export const reducer = persistReducer(
     version: 1,
     storage,
   },
-  slice.reducer
+  slice.reducer,
 );

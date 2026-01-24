@@ -26,7 +26,7 @@ const formatDate = (date: Date) => {
   // Compute diff in days
   const msPerDay = 24 * 60 * 60 * 1000;
   const dayDiff = Math.floor(
-    (startOfToday.getTime() - startOfDate.getTime()) / msPerDay
+    (startOfToday.getTime() - startOfDate.getTime()) / msPerDay,
   );
 
   // Format time part

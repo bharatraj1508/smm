@@ -18,7 +18,7 @@ class GenAIService {
   _checkConfig() {
     if (!this.ai) {
       throw new Error(
-        "GenAIService not initialized: GEMINI_API_KEY is missing"
+        "GenAIService not initialized: GEMINI_API_KEY is missing",
       );
     }
   }

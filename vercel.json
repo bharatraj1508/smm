@@ -1,0 +1,12 @@
+{
+  "buildCommand": "yarn turbo run build --filter=@smm/frontend",
+  "outputDirectory": ".next",
+  "installCommand": "yarn install --frozen-lockfile",
+  "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "*": false
+    }
+  }
+}

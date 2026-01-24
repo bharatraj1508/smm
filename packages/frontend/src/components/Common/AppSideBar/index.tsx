@@ -71,7 +71,7 @@ const items: Items[] = [
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
     pathname: "settings",
   },
@@ -100,14 +100,14 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => {
                 const isSelected = pathname.includes(
-                  item.pathname.toLowerCase()
+                  item.pathname.toLowerCase(),
                 );
                 return (
                   <SidebarMenuItem
                     key={item.title}
                     className={classNames(
                       isSelected &&
-                        "rounded-md border border-sidebar-primary bg-white"
+                        "rounded-md border border-sidebar-primary bg-white",
                     )}
                   >
                     <SidebarMenuButton asChild>

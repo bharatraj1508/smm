@@ -7,7 +7,7 @@ const ALGORITHM = "aes-256-cbc";
 const ENCRYPTION_KEY_RAW = process.env.ENCRYPTION_KEY;
 if (!ENCRYPTION_KEY_RAW && process.env.NODE_ENV === "production") {
   console.warn(
-    "Warning: ENCRYPTION_KEY environment variable is missing in production!"
+    "Warning: ENCRYPTION_KEY environment variable is missing in production!",
   );
 }
 const ENCRYPTION_KEY = ENCRYPTION_KEY_RAW
@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     lastHistoryId: { type: String, default: null },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Pre-save middleware to encrypt tokens and password on create

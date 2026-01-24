@@ -1,6 +1,7 @@
 import { StatusCode } from "status-code-enum";
 import gmailService from "../services/gmailService.js";
 import genAIService from "../services/genAIService.js";
+import { inngest } from "../inngest/client.js";
 
 class GmailController {
   async getLabels(req, res) {
@@ -85,7 +86,7 @@ class GmailController {
       const { mails, count } = await gmailService.getEmails(
         user,
         parseInt(maxResults),
-        parseInt(page)
+        parseInt(page),
       );
 
       res.status(200).json({
@@ -146,10 +147,18 @@ class GmailController {
   async getEmailSyncCount(req, res) {
     try {
       const user = req.user;
-      const { count, latestSyncedAt } = await gmailService.getEmailSyncCount(
-        user._id
-      );
-      res.status(StatusCode.SuccessOK).send({ count, latestSyncedAt });
+      const {
+        count,
+        latestSyncedAt,
+        isAutomaticSyncActive,
+        recentlySyncedCount,
+      } = await gmailService.getEmailSyncCount(user._id);
+      res.status(StatusCode.SuccessOK).send({
+        count,
+        latestSyncedAt,
+        isAutomaticSyncActive,
+        recentlySyncedCount,
+      });
     } catch (error) {
       console.error("Error in getEmailById controller:", error);
       res.status(StatusCode.ServerErrorInternal).json({
@@ -165,18 +174,17 @@ class GmailController {
       const user = req.user;
       const { maxResults = 10 } = req.body;
 
-      const emails = await gmailService.fetchNewEmails(
-        user,
-        parseInt(maxResults)
-      );
+      // Trigger Inngest job for background processing
+      await inngest.send({
+        name: "sync/user.emails",
+        data: { userId: user._id },
+      });
 
+      // We return success immediately, but the count is unknown until job finishes.
+      // Alternatively, we could wait, but for "background jobs" it's better to return accepted
       res.status(200).json({
         success: true,
-        count: emails.length,
-        message:
-          emails.length > 0
-            ? "Emails retrieved successfully"
-            : "No emails found",
+        message: "Sync started in background",
       });
     } catch (error) {
       console.error("Error in syncMails controller:", error);

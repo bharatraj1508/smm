@@ -17,7 +17,7 @@ router.get(
     }/login?error=auth_failed`,
     session: false,
   }),
-  authController.callback
+  authController.callback,
 );
 
 // Logout route

@@ -40,7 +40,6 @@ export default function Inbox() {
         {fetchingEmail ? (
           <InboxSkeleton />
         ) : emails ? (
-
           <div className="flex flex-col gap-3 w-full">
             <DataTable columns={columns} data={emails.data} />
           </div>
