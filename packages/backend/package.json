@@ -9,7 +9,9 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env DB_STATE=memory nodemon -r dotenv-flow/config index.js",
-    "dev:hosted": "cross-env DB_STATE=hosted nodemon -r dotenv-flow/config index.js"
+    "dev:hosted": "cross-env DB_STATE=hosted nodemon -r dotenv-flow/config index.js",
+    "build": "echo 'No build step for backend'",
+    "start": "node index.js"
   },
   "dependencies": {
     "@google-cloud/local-auth": "2.1.0",
