@@ -7,6 +7,7 @@ import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 
 import store from "@/store";
+import { setConnected, setDisconnected } from "@/store/slices/socket";
 
 export const useSocket = () => {
   const socketRef = useRef<Socket | null>(null);
@@ -27,8 +28,11 @@ export const useSocket = () => {
         transports: ["websocket"],
       });
 
+
+
       socketRef.current.on("connect", () => {
         console.log("Socket connected");
+        store.dispatch(setConnected());
       });
 
       socketRef.current.on("sync:complete", (data: { count: number }) => {
@@ -39,12 +43,14 @@ export const useSocket = () => {
 
       socketRef.current.on("disconnect", () => {
         console.log("Socket disconnected");
+        store.dispatch(setDisconnected());
       });
     }
 
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
+        store.dispatch(setDisconnected());
         socketRef.current = null;
       }
     };
