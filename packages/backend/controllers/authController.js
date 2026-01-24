@@ -13,7 +13,6 @@ class AuthController {
           "https://www.googleapis.com/auth/gmail.readonly",
         ],
         accessType: "offline",
-        prompt: "consent",
       })(req, res, next);
     } catch (error) {
       console.error("Error initiating Google OAuth:", error);
@@ -58,7 +57,7 @@ class AuthController {
       res.redirect(
         `${
           process.env.FRONTEND_URL || "http://localhost:3000"
-        }/login?error=callback_failed`
+        }/login?error=callback_failed`,
       );
     }
   }

@@ -42,7 +42,7 @@ export default function TablePagination({
             }}
             aria-disabled={page <= 1}
             className={cn(
-              page <= 1 ? "pointer-events-none opacity-50" : undefined
+              page <= 1 ? "pointer-events-none opacity-50" : undefined,
             )}
           />
         </PaginationItem>
@@ -57,7 +57,7 @@ export default function TablePagination({
             }}
             aria-disabled={page == numOfPages}
             className={cn(
-              page == numOfPages ? "pointer-events-none opacity-50" : undefined
+              page == numOfPages ? "pointer-events-none opacity-50" : undefined,
             )}
           />
         </PaginationItem>

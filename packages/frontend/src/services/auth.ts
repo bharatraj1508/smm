@@ -25,7 +25,7 @@ export function useAuthLogin() {
           userId: string;
           googleId: string;
         };
-      }>
+      }>,
     ) {
       login({
         accessToken: res?.data?.accessToken,
@@ -60,7 +60,7 @@ export function useAuthRegister() {
           userId: string;
           googleId: string;
         };
-      }>
+      }>,
     ) {
       login({
         accessToken: res?.data?.accessToken,

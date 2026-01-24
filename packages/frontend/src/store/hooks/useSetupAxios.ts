@@ -43,7 +43,7 @@ export function useSetupAxios(instance: AxiosInstance) {
 
           return config;
         },
-        (err: AxiosError) => Promise.reject(err)
+        (err: AxiosError) => Promise.reject(err),
       );
 
       instance.interceptors.response.use(
@@ -79,7 +79,7 @@ export function useSetupAxios(instance: AxiosInstance) {
           }
 
           return Promise.reject(error);
-        }
+        },
       );
 
       return () => {
@@ -87,6 +87,6 @@ export function useSetupAxios(instance: AxiosInstance) {
         instance.interceptors.response.clear();
       };
     }, // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 }

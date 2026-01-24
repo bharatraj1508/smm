@@ -66,6 +66,7 @@ class GmailService {
       const lastHistoryId = user.lastHistoryId;
 
       let messageIds = [];
+      let shouldFallbackToFullSync = false;
 
       if (lastHistoryId) {
         try {
@@ -98,15 +99,17 @@ class GmailService {
             console.warn(
               "History ID expired or not found, falling back to full sync",
             );
-            // messageIds remains empty, triggering full sync below
+            shouldFallbackToFullSync = true;
           } else {
             throw historyError;
           }
         }
+      } else {
+        shouldFallbackToFullSync = true;
       }
 
       // If no history yet (first-time sync or expired history), do a full fetch
-      if (!lastHistoryId || messageIds.length === 0) {
+      if (shouldFallbackToFullSync) {
         const listRes = await gmail.users.messages.list({
           userId: "me",
           labelIds: ["INBOX"],

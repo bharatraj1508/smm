@@ -14,7 +14,7 @@ const categorySchema = new mongoose.Schema(
     },
     reason: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const mailSchema = new mongoose.Schema(
@@ -64,7 +64,7 @@ const mailSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Optional: full-text search for subject/body

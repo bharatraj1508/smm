@@ -373,7 +373,10 @@ export default function Home() {
               <h3 className="font-semibold mb-4">Legal</h3>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/privacy-policy" className="hover:text-foreground">
+                  <Link
+                    href="/privacy-policy"
+                    className="hover:text-foreground"
+                  >
                     Privacy
                   </Link>
                 </li>

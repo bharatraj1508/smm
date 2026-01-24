@@ -26,21 +26,21 @@ router.get(
   "/emails",
   authenticateToken,
   requireGoogleId,
-  gmailController.getEmails
+  gmailController.getEmails,
 );
 
 router.get(
   "/sync-count",
   authenticateToken,
   requireGoogleId,
-  gmailController.getEmailSyncCount
+  gmailController.getEmailSyncCount,
 );
 
 router.post(
   "/initiate-sync",
   authenticateToken,
   requireGoogleId,
-  gmailController.syncMails
+  gmailController.syncMails,
 );
 
 // Get a specific email by ID
@@ -48,7 +48,7 @@ router.get(
   "/emails/:id",
   authenticateToken,
   requireGoogleId,
-  gmailController.getEmailById
+  gmailController.getEmailById,
 );
 
 export default router;

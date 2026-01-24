@@ -1,3 +1,4 @@
+import { createServer } from "http";
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -7,8 +8,10 @@ import path from "path";
 import appRoutes from "./routes/index.js";
 import databaseService from "./services/databaseService.js";
 import { corsOptions } from "./middleware/authMiddleware.js";
+import { initializeSocket } from "./services/socketService.js";
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3002;
 
 // Initialize database connection
@@ -30,7 +33,7 @@ if (!fs.existsSync(credentialsPath)) {
   console.warn("credentials.json file not found!");
   console.warn("This is optional when using OAuth authentication.");
   console.warn(
-    "You can get credentials from: https://console.cloud.google.com/apis/credentials"
+    "You can get credentials from: https://console.cloud.google.com/apis/credentials",
   );
 }
 
@@ -41,6 +44,9 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Initialize Passport
 app.use(passport.initialize());
+
+// Initialize Socket.io
+initializeSocket(httpServer);
 
 // Routes
 app.use("/api", appRoutes);
@@ -98,7 +104,8 @@ async function startServer() {
     // Initialize database first
     await initializeDatabase();
 
-    const server = app.listen(PORT, () => {
+    // Use httpServer.listen instead of app.listen
+    httpServer.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`Gmail API endpoints: http://localhost:${PORT}/api/gmail`);
       console.log(`Auth endpoints: http://localhost:${PORT}/auth`);
@@ -107,13 +114,13 @@ async function startServer() {
     });
 
     // Handle server errors
-    server.on("error", (error) => {
+    httpServer.on("error", (error) => {
       if (error.code === "EADDRINUSE") {
         console.error(
-          `Port ${PORT} is already in use. Please try a different port or kill the process using this port.`
+          `Port ${PORT} is already in use. Please try a different port or kill the process using this port.`,
         );
         console.error(
-          "You can kill the process with: lsof -ti:3002 | xargs kill -9"
+          "You can kill the process with: lsof -ti:3002 | xargs kill -9",
         );
       } else {
         console.error("Server error:", error);
@@ -124,7 +131,7 @@ async function startServer() {
     // Graceful shutdown
     process.on("SIGTERM", async () => {
       console.log("SIGTERM received, shutting down gracefully");
-      server.close(async () => {
+      httpServer.close(async () => {
         await databaseService.disconnect();
         process.exit(0);
       });
@@ -132,7 +139,7 @@ async function startServer() {
 
     process.on("SIGINT", async () => {
       console.log("SIGINT received, shutting down gracefully");
-      server.close(async () => {
+      httpServer.close(async () => {
         await databaseService.disconnect();
         process.exit(0);
       });
