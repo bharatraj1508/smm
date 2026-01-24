@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,12 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { useGetSettings, useUpdateSettings } from "@/services/settings";
-import { Label } from "@/components/ui/label";
-
 import { Settings as SettingsType } from "@/store/types/settings";
-import { Spinner } from "@/components/ui/spinner";
 
 export default function Settings() {
   const { data: settings, isLoading } = useGetSettings();

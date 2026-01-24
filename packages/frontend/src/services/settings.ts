@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
-import useShowAPIErrorMessage from "@/hooks/api/ShowAPIErrorMessage";
 
+import useShowAPIErrorMessage from "@/hooks/api/ShowAPIErrorMessage";
 import { Settings } from "@/store/types/settings";
 
 const baseURL = `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/settings`;
