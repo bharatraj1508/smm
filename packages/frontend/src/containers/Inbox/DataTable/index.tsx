@@ -16,7 +16,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { setBreadcrumbLabel } from "@/store/slices/breadcrumb";
 import { EmailData } from "@/store/types/gmail";
+import { useDispatch } from "react-redux";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -28,6 +30,7 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
+  const dispatch = useDispatch();
   const table = useReactTable({
     data,
     columns,
@@ -63,8 +66,17 @@ export function DataTable<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
                 className="cursor-pointer"
                 onClick={() => {
-                  const documentId = (row.original as EmailData)._id;
+                  const emailData = row.original as EmailData;
+                  const documentId = emailData._id;
                   if (documentId) {
+                    const senderName =
+                      emailData.from?.split("<")[0]?.trim() || emailData.from;
+                    dispatch(
+                      setBreadcrumbLabel({
+                        segment: documentId,
+                        label: senderName,
+                      }),
+                    );
                     router.push(`/inbox/${documentId}`);
                   }
                 }}

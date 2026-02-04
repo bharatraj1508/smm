@@ -1,12 +1,12 @@
 "use client";
 
-import useStoreSelector from "@/store/hooks/useStoreSelector";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useStoreSelector from "@/store/hooks/useStoreSelector";
 
 export const SocketIndicator = () => {
   const isConnected = useStoreSelector((state) => state.socket.isConnected);

@@ -34,13 +34,6 @@ function cleanEmailHTML(rawHTML: string) {
   return sanitized;
 }
 
-// function extractPlainText(rawHTML: string): string {
-//   if (!rawHTML) return "";
-//   const htmlIndex = rawHTML.search(/<\s*(?:!DOCTYPE|html)/i);
-//   const beforeHTML = rawHTML.slice(0, htmlIndex);
-//   return beforeHTML;
-// }
-
 export default function ViewMail({ id }: ViewMailProps) {
   const { data: mail, isPending } = useGetMailbyId(id);
   const [summary, setSummary] = useState("");
@@ -71,104 +64,116 @@ export default function ViewMail({ id }: ViewMailProps) {
   if (isPending) return <ViewMailSkeleton />;
 
   const safeHTML = cleanEmailHTML(mail?.data.body || "");
+  const senderName =
+    mail?.data.from?.match(/^(.*?)</)?.[1]?.trim() || mail?.data.from;
+  const senderEmail = mail?.data.from?.match(/<(.*?)>/)?.[1];
+  const dateStr = mail?.data.date
+    ? new Date(mail.data.date).toLocaleString([], {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : "";
 
   return (
-    <div className="flex justify-center items-center w-[80vw] mt-10">
-      <div className="w-full max-w-3xl max-h-[80dvh] border border-gray-200 rounded-xl bg-white shadow-lg p-8 overflow-auto">
-        <div className="flex items-start w-full gap-3">
-          <Image
-            width="52"
-            height="52"
-            src="/avatar.png"
-            alt="support"
-            className="w-13 h-13 rounded-full"
-          />
-          <div className="flex items-start justify-center flex-col gap-4 w-full">
-            <div className="w-full flex justify-between items-center">
-              <div className="flex flex-col items-start justify-center text-sm mt-1.5">
-                <div>
-                  <span className="font-bold">
-                    {mail?.data.from?.match(/^(.*?)</)?.[1]?.trim() ||
-                      mail?.data.from}
-                  </span>
-                  <span className="font-medium text-neutral-400">
-                    &lt;{mail?.data.from?.match(/<(.*?)>/)?.[1] || ""}&gt;
-                  </span>
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-neutral-400">
-                    to {mail?.data.to.join(", ")}
-                  </span>
-                </div>
-              </div>
+    <div className="w-full h-full bg-background">
+      <div className="px-5 py-6 max-w-[1200px] mx-auto">
+        {/* Header: Subject and badge */}
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-[22px] leading-[28px] font-normal text-foreground">
+              {mail?.data.subject || "(No Subject)"}
+            </h1>
+            <div className="flex items-center gap-2 shrink-0">
+              {mail?.data.category && (
+                <Badge
+                  variant="secondary"
+                  className="bg-yellow-200 dark:bg-yellow-900/30 text-orange-600 dark:text-orange-300 font-medium rounded-md px-2 py-0.5 text-xs uppercase tracking-wider"
+                >
+                  {mail.data.category.type.split("_").join(" ")}
+                </Badge>
+              )}
               <Button
+                size="sm"
+                variant="outline"
                 onClick={handleSummarize}
                 disabled={isStreaming || isRequestPending}
-                className="border border-gray-200 rounded-lg px-3 py-1.5 bg-gradient-to-r from-purple-800 to-purple-400 text-white font-bold text-sm hover:opacity-90 disabled:opacity-50"
+                className="group h-8 md:h-9 border border-border bg-linear-to-r from-purple-800 to-purple-500 text-white font-medium px-4 ml-2 shadow-sm rounded-full transition-all hover:from-purple-100 hover:to-purple-50 hover:text-purple-800 hover:border-purple-300"
               >
-                <span className="flex items-center justify-center gap-1">
-                  {isStreaming || isRequestPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <LucideSparkles className="w-5 h-5" />
-                  )}
-                  {isStreaming || isRequestPending
-                    ? "Summarizing..."
-                    : "Summarize"}
-                </span>
+                {isStreaming || isRequestPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin text-white group-hover:text-purple-800" />
+                ) : (
+                  <LucideSparkles className="w-4 h-4 mr-2 text-white group-hover:text-purple-800" />
+                )}
+                {isStreaming || isRequestPending
+                  ? "Summarizing..."
+                  : "Summarize"}
               </Button>
             </div>
-
-            <div className="flex flex-col justify-center gap-2">
-              <Badge variant="secondary" className="bg-amber-400 w-fit">
-                {mail?.data.category.type.split("_").join(" ")}
-              </Badge>
-              <p className="text-xs font-thin">{mail?.data.category.reason}</p>
-            </div>
-
-            {(summary || isStreaming) && (
-              <div className="w-full bg-purple-50/50 p-6 rounded-xl border border-purple-100 mb-8 transition-all animate-in fade-in slide-in-from-top-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-purple-100/50 rounded-lg">
-                    <LucideSparkles className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <h3 className="text-purple-900 font-bold text-lg">
-                    AI Insights & Summary
-                  </h3>
-                </div>
-                <div
-                  className="prose prose-sm max-w-none text-gray-700 leading-relaxed
-                  prose-headings:text-purple-900 prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2
-                  prose-p:mb-3 prose-li:mb-1 prose-strong:text-purple-800 prose-ul:my-2 prose-ol:my-2"
-                >
-                  <ReactMarkdown>{summary}</ReactMarkdown>
-                  {isStreaming && (
-                    <span className="inline-block w-2 h-4 ml-1 bg-purple-400 animate-pulse align-middle rounded-sm" />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {mail?.data.subject && (
-              <h1 className="text-2xl font-semibold mb-6 text-gray-800">
-                {mail.data.subject}
-              </h1>
-            )}
-            <div
-              className="prose prose-slate max-w-none
-          prose-img:rounded-lg
-          prose-a:text-blue-600
-          prose-a:underline
-          prose-headings:mb-2
-          prose-p:my-1
-          prose-table:border
-          prose-blockquote:border-l-4
-          prose-blockquote:border-blue-300
-          prose-blockquote:pl-4
-          prose-blockquote:text-gray-600"
-              dangerouslySetInnerHTML={{ __html: safeHTML }}
-            />
           </div>
+        </div>
+
+        {/* Sender Info Row */}
+        <div className="flex items-start gap-4 mb-8">
+          <Image
+            width={40}
+            height={40}
+            src="/avatar.png"
+            alt="Sender Avatar"
+            className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 p-0.5"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline flex-wrap gap-2">
+              <span className="font-bold text-foreground text-[15px]">
+                {senderName}
+              </span>
+              <span className="text-[13px] text-muted-foreground">
+                {senderEmail && `<${senderEmail}>`}
+              </span>
+              <span className="text-[12px] text-muted-foreground mx-1">
+                {dateStr}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
+              <span>to</span>
+              <span className="text-foreground">
+                {mail?.data.to.join(", ")}
+              </span>
+            </div>
+            {mail?.data.category?.reason && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded w-fit">
+                Reason: {mail.data.category.reason}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Summary Section */}
+        {(summary || isStreaming) && (
+          <div className="mb-8 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800/30">
+            <div className="flex items-center gap-2 mb-2 text-purple-900 dark:text-purple-300 font-semibold text-sm">
+              <LucideSparkles className="w-4 h-4" />
+              <span>AI Summary</span>
+            </div>
+            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
+              <ReactMarkdown>{summary}</ReactMarkdown>
+              {isStreaming && (
+                <span className="inline-block w-1.5 h-3 ml-1 bg-purple-400 animate-pulse rounded-sm align-middle" />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Email Body */}
+        <div className="w-full overflow-hidden">
+          <div
+            className="prose prose-sm dark:prose-invert max-w-none text-foreground font-sans
+              prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+              prose-img:max-w-full prose-img:h-auto prose-img:rounded-md
+              prose-p:leading-relaxed prose-p:my-2
+              prose-headings:font-normal prose-headings:text-foreground
+              prose-blockquote:border-l-2 prose-blockquote:border-border prose-blockquote:pl-4 prose-blockquote:text-muted-foreground"
+            dangerouslySetInnerHTML={{ __html: safeHTML }}
+          />
         </div>
       </div>
     </div>
