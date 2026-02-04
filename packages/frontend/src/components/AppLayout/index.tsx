@@ -9,10 +9,10 @@ import { useRoutesWithoutRootLayout } from "@/hooks/useRoutesWithoutRootLayout";
 import { useSetupAxios } from "@/store/hooks/useSetupAxios";
 
 import { AppSidebar } from "../Common/AppSideBar";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
-import { Toaster } from "../ui/sonner";
 import { ModeToggle } from "../ui/mode-toggle";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { SocketIndicator } from "../ui/socket-indicator";
+import { Toaster } from "../ui/sonner";
 
 export default function AppLayout({ children }: PropsWithChildren) {
   useSetupAxios(axios);

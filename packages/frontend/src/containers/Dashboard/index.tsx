@@ -7,9 +7,9 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { useEmailSyncCount, useSyncMails } from "@/services/gmail";
 import store from "@/store";
-import { Spinner } from "@/components/ui/spinner";
 
 function DashBoard() {
   const { data, isFetching } = useEmailSyncCount();

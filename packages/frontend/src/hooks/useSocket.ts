@@ -7,9 +7,9 @@ import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 
 import store from "@/store";
+import useStoreSelector from "@/store/hooks/useStoreSelector";
 import { setConnected, setDisconnected } from "@/store/slices/socket";
 
-import useStoreSelector from "@/store/hooks/useStoreSelector";
 
 export const useSocket = () => {
   const socketRef = useRef<Socket | null>(null);
