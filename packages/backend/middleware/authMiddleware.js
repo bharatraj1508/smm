@@ -1,5 +1,5 @@
-import authService from "../services/authService.js";
-import databaseService from "../services/databaseService.js";
+import { verifyJWTToken } from "../services/authService.js";
+import { getUserById } from "../services/databaseService.js";
 
 // JWT Authentication Middleware
 export const authenticateToken = async (req, res, next) => {
@@ -16,10 +16,10 @@ export const authenticateToken = async (req, res, next) => {
     }
 
     // Verify JWT token
-    const decoded = authService.verifyJWTToken(token);
+    const decoded = verifyJWTToken(token);
 
     // Get user from database
-    const user = await databaseService.getUserById(decoded.userId);
+    const user = await getUserById(decoded.userId);
 
     if (!user || !user.isActive) {
       return res.status(401).json({
@@ -74,8 +74,8 @@ export const optionalAuth = async (req, res, next) => {
     const token = authHeader && authHeader.split(" ")[1];
 
     if (token) {
-      const decoded = authService.verifyJWTToken(token);
-      const user = await databaseService.getUserById(decoded.userId);
+      const decoded = verifyJWTToken(token);
+      const user = await getUserById(decoded.userId);
 
       if (user && user.isActive) {
         req.user = user;

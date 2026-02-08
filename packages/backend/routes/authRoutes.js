@@ -1,12 +1,12 @@
 import express from "express";
 import passport from "passport";
 import { authenticateToken } from "../middleware/authMiddleware.js";
-import authController from "../controllers/authController.js";
+import { googleLogin, callback, logout, refresh, register, login } from "../controllers/authController.js";
 
 const router = express.Router();
 
 // Google OAuth login route
-router.get("/google", authController.googleLogin);
+router.get("/google", googleLogin);
 
 // Google OAuth callback route
 router.get(
@@ -17,17 +17,17 @@ router.get(
     }/login?error=auth_failed`,
     session: false,
   }),
-  authController.callback,
+  callback,
 );
 
 // Logout route
-router.post("/logout", authController.logout);
+router.post("/logout", logout);
 
 // Refresh token route
-router.post("/refresh", authenticateToken, authController.refresh);
+router.post("/refresh", authenticateToken, refresh);
 
-router.post("/register", authController.register);
+router.post("/register", register);
 
-router.post("/login", authController.login);
+router.post("/login", login);
 
 export default router;

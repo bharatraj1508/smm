@@ -1,11 +1,11 @@
 import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
-import settingsController from "../controllers/settingsController.js";
+import { getSettings, updateSettings } from "../controllers/settingsController.js";
 
 const router = express.Router();
 
 router.use(authenticateToken);
-router.get("/", settingsController.getSettings);
-router.put("/", settingsController.updateSettings);
+router.get("/", getSettings);
+router.put("/", updateSettings);
 
 export default router;
