@@ -6,7 +6,7 @@ import passport from "passport";
 import fs from "fs";
 import path from "path";
 import appRoutes from "./routes/index.js";
-import databaseService from "./services/databaseService.js";
+import { connect, disconnect } from "./services/databaseService.js";
 import { corsOptions } from "./middleware/authMiddleware.js";
 import { initializeSocket } from "./services/socketService.js";
 
@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3002;
 // Initialize database connection
 async function initializeDatabase() {
   try {
-    await databaseService.connect();
+    await connect();
   } catch (error) {
     console.error("Failed to connect to database:", error);
     // Don't exit process in serverless environment
@@ -132,7 +132,7 @@ async function startServer() {
     process.on("SIGTERM", async () => {
       console.log("SIGTERM received, shutting down gracefully");
       httpServer.close(async () => {
-        await databaseService.disconnect();
+        await disconnect();
         process.exit(0);
       });
     });
@@ -140,7 +140,7 @@ async function startServer() {
     process.on("SIGINT", async () => {
       console.log("SIGINT received, shutting down gracefully");
       httpServer.close(async () => {
-        await databaseService.disconnect();
+        await disconnect();
         process.exit(0);
       });
     });

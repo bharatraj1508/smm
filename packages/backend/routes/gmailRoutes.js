@@ -1,5 +1,13 @@
 import express from "express";
-import gmailController from "../controllers/gmailController.js";
+import {
+  getLabels,
+  getLabelById,
+  healthCheck,
+  getEmails,
+  getEmailById,
+  getEmailSyncCount,
+  syncMails,
+} from "../controllers/gmailController.js";
 import {
   authenticateToken,
   rateLimit,
@@ -9,38 +17,38 @@ import {
 const router = express.Router();
 
 // Health check route (no authentication required)
-router.get("/health", gmailController.healthCheck);
+router.get("/health", healthCheck);
 
 // Apply rate limiting to all authenticated routes
 router.use(rateLimit(100, 15 * 60 * 1000)); // 100 requests per 15 minutes
 
 // Protected routes (require authentication)
 // Get all labels
-router.get("/labels", authenticateToken, gmailController.getLabels);
+router.get("/labels", authenticateToken, getLabels);
 
 // Get a specific label by ID
-router.get("/labels/:labelId", authenticateToken, gmailController.getLabelById);
+router.get("/labels/:labelId", authenticateToken, getLabelById);
 
 // Get emails with optional query
 router.get(
   "/emails",
   authenticateToken,
   requireGoogleId,
-  gmailController.getEmails,
+  getEmails,
 );
 
 router.get(
   "/sync-count",
   authenticateToken,
   requireGoogleId,
-  gmailController.getEmailSyncCount,
+  getEmailSyncCount,
 );
 
 router.post(
   "/initiate-sync",
   authenticateToken,
   requireGoogleId,
-  gmailController.syncMails,
+  syncMails,
 );
 
 // Get a specific email by ID
@@ -48,7 +56,7 @@ router.get(
   "/emails/:id",
   authenticateToken,
   requireGoogleId,
-  gmailController.getEmailById,
+  getEmailById,
 );
 
 export default router;

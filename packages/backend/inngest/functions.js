@@ -1,7 +1,7 @@
 import { inngest } from "./client.js";
 import Settings from "../models/settings.js";
-import gmailService from "../services/gmailService.js";
-import databaseService from "../services/databaseService.js";
+import { fetchNewEmails } from "../services/gmailService.js";
+import { getUserById } from "../services/databaseService.js";
 import { emitToUser } from "../services/socketService.js";
 
 export const syncEmails = inngest.createFunction(
@@ -19,7 +19,7 @@ export const syncEmails = inngest.createFunction(
         if (setting.userId && setting.userId.isActive) {
           try {
             console.log(`Syncing for user: ${setting.userId.email}`);
-            await gmailService.fetchNewEmails(setting.userId);
+            await fetchNewEmails(setting.userId);
             syncedCount++;
           } catch (e) {
             console.error(`Failed to sync for ${setting.userId.email}`, e);
@@ -42,12 +42,12 @@ export const syncEmailsForUser = inngest.createFunction(
 
     await step.run("sync-single-user", async () => {
       try {
-        const user = await databaseService.getUserById(userId);
+        const user = await getUserById(userId);
         if (!user) {
           throw new Error("User not found");
         }
         console.log(`Manual sync triggered for user: ${user.email}`);
-        const emails = await gmailService.fetchNewEmails(user);
+        const emails = await fetchNewEmails(user);
 
         // Notify frontend via socket
         emitToUser(userId, "sync:complete", { count: emails.length });

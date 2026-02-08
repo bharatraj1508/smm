@@ -1,311 +1,303 @@
-import authService from "./authService.js";
+import { getAuthenticatedGmailClient } from "./authService.js";
 import Mail from "../models/mail.js";
 import User from "../models/user.js";
 import Settings from "../models/settings.js";
 
-class GmailService {
-  constructor() {
-    this.gmail = null;
-  }
-
-  async authenticate(user) {
-    try {
-      if (!user) {
-        throw new Error("User authentication required");
-      }
-
-      // Get authenticated Gmail client for the user
-      this.gmail = await authService.getAuthenticatedGmailClient(user);
-      return this.gmail;
-    } catch (error) {
-      console.error("Gmail authentication failed:", error);
-      throw new Error(`Gmail authentication failed: ${error.message}`);
+// Internal helper function to authenticate and get Gmail client
+const authenticate = async (user) => {
+  try {
+    if (!user) {
+      throw new Error("User authentication required");
     }
+
+    // Get authenticated Gmail client for the user
+    return await getAuthenticatedGmailClient(user);
+  } catch (error) {
+    console.error("Gmail authentication failed:", error);
+    throw new Error(`Gmail authentication failed: ${error.message}`);
   }
+};
 
-  async listLabels(user) {
-    try {
-      const gmail = await this.authenticate(user);
+export const listLabels = async (user) => {
+  try {
+    const gmail = await authenticate(user);
 
-      // Get the list of labels.
-      const result = await gmail.users.labels.list({
-        userId: "me",
-      });
+    // Get the list of labels.
+    const result = await gmail.users.labels.list({
+      userId: "me",
+    });
 
-      const labels = result.data.labels;
-      if (!labels || labels.length === 0) {
-        return [];
-      }
-
-      return labels;
-    } catch (error) {
-      console.error("Error listing labels:", error);
-      throw new Error(`Failed to list labels: ${error.message}`);
+    const labels = result.data.labels;
+    if (!labels || labels.length === 0) {
+      return [];
     }
+
+    return labels;
+  } catch (error) {
+    console.error("Error listing labels:", error);
+    throw new Error(`Failed to list labels: ${error.message}`);
   }
+};
 
-  async getLabel(user, labelId) {
-    try {
-      const gmail = await this.authenticate(user);
+export const getLabel = async (user, labelId) => {
+  try {
+    const gmail = await authenticate(user);
 
-      const result = await gmail.users.labels.get({
-        userId: "me",
-        id: labelId,
-      });
+    const result = await gmail.users.labels.get({
+      userId: "me",
+      id: labelId,
+    });
 
-      return result.data;
-    } catch (error) {
-      console.error("Error getting label:", error);
-      throw new Error(`Failed to get label: ${error.message}`);
-    }
+    return result.data;
+  } catch (error) {
+    console.error("Error getting label:", error);
+    throw new Error(`Failed to get label: ${error.message}`);
   }
+};
 
-  async fetchNewEmails(user, maxResults = 10) {
-    try {
-      const gmail = await this.authenticate(user);
+export const fetchNewEmails = async (user, maxResults = 10) => {
+  try {
+    const gmail = await authenticate(user);
 
-      const lastHistoryId = user.lastHistoryId;
+    const lastHistoryId = user.lastHistoryId;
 
-      let messageIds = [];
-      let shouldFallbackToFullSync = false;
+    let messageIds = [];
+    let shouldFallbackToFullSync = false;
 
-      if (lastHistoryId) {
-        try {
-          // Incremental sync — only get new emails since last sync
-          const historyRes = await gmail.users.history.list({
-            userId: "me",
-            startHistoryId: lastHistoryId,
-            historyTypes: ["messageAdded"], // only new messages
-          });
-
-          const history = historyRes.data.history || [];
-
-          history.forEach((h) => {
-            if (h.messagesAdded) {
-              h.messagesAdded.forEach((m) => {
-                messageIds.push(m.message.id);
-              });
-            }
-          });
-
-          // Deduplicate message IDs
-          messageIds = [...new Set(messageIds)];
-        } catch (historyError) {
-          // Gmail history IDs expire after ~7 days. If expired, it returns 404.
-          // Fall back to full sync in this case.
-          if (
-            historyError.code === 404 ||
-            historyError.response?.status === 404
-          ) {
-            console.warn(
-              "History ID expired or not found, falling back to full sync",
-            );
-            shouldFallbackToFullSync = true;
-          } else {
-            throw historyError;
-          }
-        }
-      } else {
-        shouldFallbackToFullSync = true;
-      }
-
-      // If no history yet (first-time sync or expired history), do a full fetch
-      if (shouldFallbackToFullSync) {
-        const listRes = await gmail.users.messages.list({
+    if (lastHistoryId) {
+      try {
+        // Incremental sync — only get new emails since last sync
+        const historyRes = await gmail.users.history.list({
           userId: "me",
-          labelIds: ["INBOX"],
-          maxResults,
+          startHistoryId: lastHistoryId,
+          historyTypes: ["messageAdded"], // only new messages
         });
-        messageIds = listRes.data.messages?.map((m) => m.id) || [];
-      }
 
-      // Fetch full message details
-      const emailPromises = messageIds.map(async (id) => {
-        try {
-          const email = await gmail.users.messages.get({
-            userId: "me",
-            id,
-            format: "full",
-          });
+        const history = historyRes.data.history || [];
 
-          const payload = email.data.payload;
-          const headers = payload.headers;
+        history.forEach((h) => {
+          if (h.messagesAdded) {
+            h.messagesAdded.forEach((m) => {
+              messageIds.push(m.message.id);
+            });
+          }
+        });
 
-          const subject =
-            headers.find((h) => h.name === "Subject")?.value || "";
-          const from = headers.find((h) => h.name === "From")?.value || "";
-          const toHeader = headers.find((h) => h.name === "To")?.value || "";
-          const to = toHeader ? toHeader.split(",").map((a) => a.trim()) : [];
-          const dateHeader = headers.find((h) => h.name === "Date")?.value;
-          const date = dateHeader ? new Date(dateHeader) : null;
-
-          const decodeBase64 = (str) =>
-            Buffer.from(
-              str.replace(/-/g, "+").replace(/_/g, "/"),
-              "base64",
-            ).toString("utf-8");
-
-          const getBody = (payload) => {
-            if (payload.body?.data) return decodeBase64(payload.body.data);
-            if (payload.parts?.length)
-              return payload.parts.map(getBody).join("\n");
-            return "";
-          };
-
-          const body = getBody(payload);
-          const labels = email.data.labelIds || [];
-
-          const mailDoc = {
-            user: user._id,
-            mailId: email.data.id,
-            threadId: email.data.threadId,
-            subject,
-            from,
-            to,
-            snippet: email.data.snippet,
-            body,
-            labels,
-            date,
-            lastSyncedAt: new Date(),
-          };
-
-          // Upsert into DB
-          await Mail.findOneAndUpdate(
-            { mailId: mailDoc.mailId },
-            { $set: mailDoc },
-            { upsert: true },
+        // Deduplicate message IDs
+        messageIds = [...new Set(messageIds)];
+      } catch (historyError) {
+        // Gmail history IDs expire after ~7 days. If expired, it returns 404.
+        // Fall back to full sync in this case.
+        if (
+          historyError.code === 404 ||
+          historyError.response?.status === 404
+        ) {
+          console.warn(
+            "History ID expired or not found, falling back to full sync",
           );
-
-          return mailDoc;
-        } catch (msgError) {
-          console.error(`Error fetching message ${id}:`, msgError.message);
-          return null;
+          shouldFallbackToFullSync = true;
+        } else {
+          throw historyError;
         }
-      });
-
-      const emails = (await Promise.all(emailPromises)).filter(
-        (email) => email !== null,
-      );
-      emails.sort((a, b) => b.date - a.date);
-
-      const profileRes = await gmail.users.getProfile({ userId: "me" });
-      const currentHistoryId = profileRes.data.historyId;
-
-      if (currentHistoryId) {
-        await User.findByIdAndUpdate(user._id, {
-          lastHistoryId: currentHistoryId,
-        });
       }
-
-      // Update Settings lastSyncedAt
-      await Settings.findOneAndUpdate(
-        { userId: user._id },
-        { lastSyncedAt: new Date() },
-        { new: true },
-      );
-
-      return emails;
-    } catch (error) {
-      console.error("Error getting emails:", error);
-      throw new Error(`Failed to get emails: ${error.message}`);
+    } else {
+      shouldFallbackToFullSync = true;
     }
-  }
 
-  async getEmails(user, maxResults, page) {
-    try {
-      const pageNumber = page;
-      const pageSize = maxResults;
-
-      const count = await Mail.countDocuments({ user });
-
-      const mails = await Mail.find({ user })
-        .sort({ date: -1 })
-        .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize)
-        .populate("user", "name email _id");
-
-      return { mails, count };
-    } catch (error) {
-      console.error("Error getting emails:", error);
-      throw new Error(`Failed to get emails: ${error.message}`);
-    }
-  }
-
-  // New method to get email by ID
-  async getEmailById(id) {
-    try {
-      const mail = await Mail.findById(id).populate("user", "name email _id");
-      return mail;
-    } catch (error) {
-      console.error("Error getting email by ID:", error);
-      throw new Error(`Failed to get email: ${error.message}`);
-    }
-  }
-
-  async getEmailSyncCount(user) {
-    try {
-      // Get the count of synced emails for this user
-      const countPromise = Mail.countDocuments({ user });
-
-      // Get the most recent lastSyncedAt date for this user
-      const latestSyncedMailPromise = Mail.findOne({ user })
-        .sort({ lastSyncedAt: -1 }) // Descending order, so first result is latest
-        .select("lastSyncedAt")
-        .lean();
-
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const recentCountPromise = Mail.countDocuments({
-        user,
-        lastSyncedAt: { $gte: oneHourAgo },
+    // If no history yet (first-time sync or expired history), do a full fetch
+    if (shouldFallbackToFullSync) {
+      const listRes = await gmail.users.messages.list({
+        userId: "me",
+        labelIds: ["INBOX"],
+        maxResults,
       });
-
-      const settingsPromise = Settings.findOne({ userId: user }).select(
-        "automaticSync lastSyncedAt",
-      );
-
-      const [count, latestSyncedMail, settingsDoc, recentlySyncedCount] =
-        await Promise.all([
-          countPromise,
-          latestSyncedMailPromise,
-          settingsPromise,
-          recentCountPromise,
-        ]);
-      const latestSyncedAt =
-        settingsDoc?.lastSyncedAt || latestSyncedMail?.lastSyncedAt || null;
-      const isAutomaticSyncActive = settingsDoc
-        ? settingsDoc.automaticSync
-        : false;
-
-      return {
-        count,
-        latestSyncedAt,
-        isAutomaticSyncActive,
-        recentlySyncedCount,
-      };
-    } catch (error) {
-      console.error(
-        "Error getting email sync count and latest lastSyncedAt:",
-        error,
-      );
-      throw new Error(`Failed to get email sync info: ${error.message}`);
+      messageIds = listRes.data.messages?.map((m) => m.id) || [];
     }
-  }
 
-  async getLastSyncAt(userId) {
-    try {
-      const latestSyncedAt = await Mail.findOne({ user: userId })
-        .sort({ lastSyncedAt: -1 })
-        .select("lastSyncedAt")
-        .lean();
-      return latestSyncedAt;
-    } catch (error) {
-      console.error(
-        "Error getting email sync count and latest lastSyncedAt:",
-        error,
-      );
-      throw new Error(`Failed to get email sync info: ${error.message}`);
+    // Fetch full message details
+    const emailPromises = messageIds.map(async (id) => {
+      try {
+        const email = await gmail.users.messages.get({
+          userId: "me",
+          id,
+          format: "full",
+        });
+
+        const payload = email.data.payload;
+        const headers = payload.headers;
+
+        const subject =
+          headers.find((h) => h.name === "Subject")?.value || "";
+        const from = headers.find((h) => h.name === "From")?.value || "";
+        const toHeader = headers.find((h) => h.name === "To")?.value || "";
+        const to = toHeader ? toHeader.split(",").map((a) => a.trim()) : [];
+        const dateHeader = headers.find((h) => h.name === "Date")?.value;
+        const date = dateHeader ? new Date(dateHeader) : null;
+
+        const decodeBase64 = (str) =>
+          Buffer.from(
+            str.replace(/-/g, "+").replace(/_/g, "/"),
+            "base64",
+          ).toString("utf-8");
+
+        const getBody = (payload) => {
+          if (payload.body?.data) return decodeBase64(payload.body.data);
+          if (payload.parts?.length)
+            return payload.parts.map(getBody).join("\n");
+          return "";
+        };
+
+        const body = getBody(payload);
+        const labels = email.data.labelIds || [];
+
+        const mailDoc = {
+          user: user._id,
+          mailId: email.data.id,
+          threadId: email.data.threadId,
+          subject,
+          from,
+          to,
+          snippet: email.data.snippet,
+          body,
+          labels,
+          date,
+          lastSyncedAt: new Date(),
+        };
+
+        // Upsert into DB
+        await Mail.findOneAndUpdate(
+          { mailId: mailDoc.mailId },
+          { $set: mailDoc },
+          { upsert: true },
+        );
+
+        return mailDoc;
+      } catch (msgError) {
+        console.error(`Error fetching message ${id}:`, msgError.message);
+        return null;
+      }
+    });
+
+    const emails = (await Promise.all(emailPromises)).filter(
+      (email) => email !== null,
+    );
+    emails.sort((a, b) => b.date - a.date);
+
+    const profileRes = await gmail.users.getProfile({ userId: "me" });
+    const currentHistoryId = profileRes.data.historyId;
+
+    if (currentHistoryId) {
+      await User.findByIdAndUpdate(user._id, {
+        lastHistoryId: currentHistoryId,
+      });
     }
-  }
-}
 
-export default new GmailService();
+    // Update Settings lastSyncedAt
+    await Settings.findOneAndUpdate(
+      { userId: user._id },
+      { lastSyncedAt: new Date() },
+      { new: true },
+    );
+
+    return emails;
+  } catch (error) {
+    console.error("Error getting emails:", error);
+    throw new Error(`Failed to get emails: ${error.message}`);
+  }
+};
+
+export const getEmails = async (user, maxResults, page) => {
+  try {
+    const pageNumber = page;
+    const pageSize = maxResults;
+
+    const count = await Mail.countDocuments({ user });
+
+    const mails = await Mail.find({ user })
+      .sort({ date: -1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .populate("user", "name email _id");
+
+    return { mails, count };
+  } catch (error) {
+    console.error("Error getting emails:", error);
+    throw new Error(`Failed to get emails: ${error.message}`);
+  }
+};
+
+// Get email by ID
+export const getEmailById = async (id) => {
+  try {
+    const mail = await Mail.findById(id).populate("user", "name email _id");
+    return mail;
+  } catch (error) {
+    console.error("Error getting email by ID:", error);
+    throw new Error(`Failed to get email: ${error.message}`);
+  }
+};
+
+export const getEmailSyncCount = async (user) => {
+  try {
+    // Get the count of synced emails for this user
+    const countPromise = Mail.countDocuments({ user });
+
+    // Get the most recent lastSyncedAt date for this user
+    const latestSyncedMailPromise = Mail.findOne({ user })
+      .sort({ lastSyncedAt: -1 }) // Descending order, so first result is latest
+      .select("lastSyncedAt")
+      .lean();
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentCountPromise = Mail.countDocuments({
+      user,
+      lastSyncedAt: { $gte: oneHourAgo },
+    });
+
+    const settingsPromise = Settings.findOne({ userId: user }).select(
+      "automaticSync lastSyncedAt",
+    );
+
+    const [count, latestSyncedMail, settingsDoc, recentlySyncedCount] =
+      await Promise.all([
+        countPromise,
+        latestSyncedMailPromise,
+        settingsPromise,
+        recentCountPromise,
+      ]);
+    const latestSyncedAt =
+      settingsDoc?.lastSyncedAt || latestSyncedMail?.lastSyncedAt || null;
+    const isAutomaticSyncActive = settingsDoc
+      ? settingsDoc.automaticSync
+      : false;
+
+    return {
+      count,
+      latestSyncedAt,
+      isAutomaticSyncActive,
+      recentlySyncedCount,
+    };
+  } catch (error) {
+    console.error(
+      "Error getting email sync count and latest lastSyncedAt:",
+      error,
+    );
+    throw new Error(`Failed to get email sync info: ${error.message}`);
+  }
+};
+
+export const getLastSyncAt = async (userId) => {
+  try {
+    const latestSyncedAt = await Mail.findOne({ user: userId })
+      .sort({ lastSyncedAt: -1 })
+      .select("lastSyncedAt")
+      .lean();
+    return latestSyncedAt;
+  } catch (error) {
+    console.error(
+      "Error getting email sync count and latest lastSyncedAt:",
+      error,
+    );
+    throw new Error(`Failed to get email sync info: ${error.message}`);
+  }
+};
